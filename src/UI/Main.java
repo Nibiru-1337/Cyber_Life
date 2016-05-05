@@ -12,6 +12,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
         Game g = new Game();
+
         FXMLLoader firstLoader = new FXMLLoader(getClass().getResource("WindowMain.fxml"));
         firstLoader.setController(new ControllerMain(g));
         Parent root = firstLoader.load();

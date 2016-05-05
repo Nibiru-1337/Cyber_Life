@@ -4,21 +4,22 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
+import UI.CanvasRedrawTask;
 import rules.*;
 /**
  * Created by Nibiru on 2016-04-27.
  */
-public class Game extends Service{
+public class Game implements Runnable{
 
     public HashMap <Point, Boolean> board;
     private HashMap <Point, Boolean> board2;
     private HashSet <Point> active;
     private HashSet <Point> active2;
-    private HashMap <List, eState>discreteRules;
+    private HashMap<List<List<eState>>, eState> discreteRules;
     private int N = 5;
     private int generation;
+    private CanvasRedrawTask<HashMap> task;
+    public boolean work = false;
 
     public Game() {
         //TODO: give initial size?
@@ -26,22 +27,10 @@ public class Game extends Service{
         board2 = new HashMap<>();
         active = new HashSet<>();
         active2 = new HashSet<>();
-        discreteRules = new HashMap<>();
+        discreteRules = new HashMap<List<List<eState>>, eState>();
         generation = 0;
     }
 
-    @Override
-    protected Task createTask() {
-        Task t = new Task() {
-            @Override
-            protected Object call() throws Exception {
-                Thread.sleep(2000);
-                getNextGeneration();
-                return null;
-            }
-        };
-        return null;
-    }
 
     public List<List<eState>> getNeighborhood(Point xy){
         //initialize arrayList to store neighborhood
@@ -76,10 +65,10 @@ public class Game extends Service{
     public void getNextGeneration() {
         //prepare active set if none was prepared earlier
         if (generation == 0) {
-            Iterator iter = board.entrySet().iterator();
+            Iterator<Map.Entry<Point, Boolean>> iter = board.entrySet().iterator();
             while (iter.hasNext()) {
-                Map.Entry pair = (Map.Entry) iter.next();
-                Point xy = (Point) pair.getKey();
+                Map.Entry<Point, Boolean> pair = iter.next();
+                Point xy = pair.getKey();
                 //generate co-ordinates to add as active
                 int offset = N / 2;
                 for (int i = xy.x - offset; i <= xy.x + offset; i++)
@@ -88,13 +77,13 @@ public class Game extends Service{
             }
         }
         //check all the board cells
-        Iterator it = board.entrySet().iterator();
+        Iterator<Map.Entry<Point, Boolean>> it = board.entrySet().iterator();
         List<List<eState>> neighborhood;
         eState s;
         while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            Point xy = (Point) pair.getKey();
-            neighborhood = getNeighborhood((Point) pair.getKey());
+            Map.Entry<Point, Boolean> pair = it.next();
+            Point xy = pair.getKey();
+            neighborhood = getNeighborhood(pair.getKey());
             s = discreteRules.get(neighborhood);
             if (active.contains(xy) || s != null) {
                 //generate co-ordinates to add as active
@@ -103,11 +92,11 @@ public class Game extends Service{
                     for (int j = xy.y - offset; j <= xy.y + offset; j++)
                         active2.add(new Point(i, j));
                 //copy resulting state to board2
-                board2.put((Point) pair.getKey(), (Boolean) pair.getValue());
+                board2.put(pair.getKey(), pair.getValue());
 
             } else {
                 //rule does not apply or is not active then copy over to board2
-                board2.put(xy, (Boolean) pair.getValue());
+                board2.put(xy, pair.getValue());
                 active.remove(xy);
             }
         }
@@ -137,7 +126,7 @@ public class Game extends Service{
         generation++;
     }
 
-    public Iterator getDiscreteRuleIterator(){
+    public Iterator<Map.Entry<List<List<eState>>, eState>> getDiscreteRuleIterator(){
         return discreteRules.entrySet().iterator();
     }
 
@@ -165,10 +154,27 @@ public class Game extends Service{
         return generation;
     }
 
+    public void setTask(CanvasRedrawTask<HashMap> t){
+        this.task = t;
+    }
+
     private int save(){
         return 0;
     }
     private int load(){
         return 0;
+    }
+
+    @Override
+    public void run() {
+        while (work) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            getNextGeneration();
+            task.requestRedraw(board);
+        }
     }
 }

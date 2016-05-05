@@ -3,6 +3,7 @@ package UI;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -15,13 +16,15 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class CanvasRedrawTask<T> extends AnimationTimer {
     private final AtomicReference<T> data = new AtomicReference<T>(null);
     private final Canvas canvas;
+    private final Label lGeneration;
     private final double width;
     private final double height;
 
-    public CanvasRedrawTask(Canvas canvas) {
+    public CanvasRedrawTask(Canvas canvas, Label lGen) {
         this.canvas = canvas;
         this.width = canvas.getWidth();
         this.height = canvas.getHeight();
+        this.lGeneration = lGen;
     }
 
     public void requestRedraw(T dataToDraw) {
@@ -33,9 +36,9 @@ public abstract class CanvasRedrawTask<T> extends AnimationTimer {
         // check if new data is available
         T dataToDraw = data.getAndSet(null);
         if (dataToDraw != null) {
-            redraw(canvas.getGraphicsContext2D(), dataToDraw, this.width, this.height);
+            redraw(canvas.getGraphicsContext2D(), dataToDraw, this.width, this.height, lGeneration);
         }
     }
 
-    protected abstract void redraw(GraphicsContext context, T data, double w, double h);
+    protected abstract void redraw(GraphicsContext context, T data, double w, double h, Label lGeneration);
 }

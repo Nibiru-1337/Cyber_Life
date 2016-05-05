@@ -26,6 +26,7 @@ public class ControllerMain implements Initializable {
     private int BLOCKSIZE = 10;
     private GraphicsContext gc;
     private Game g;
+    Thread t;
     private CanvasRedrawTask<HashMap> task;
     @FXML private Canvas c;
     @FXML private FlowPane fpCurrentRules;
@@ -37,13 +38,15 @@ public class ControllerMain implements Initializable {
 
     @Override public void initialize(URL location, ResourceBundle resources) {
         gc = c.getGraphicsContext2D();
-        task = new CanvasRedrawTask<HashMap>(c) {
+        task = new CanvasRedrawTask<HashMap>(c, lGeneration) {
             @Override
-            protected void redraw(GraphicsContext context, HashMap data, double w, double h) {
+            protected void redraw(GraphicsContext context, HashMap data, double w, double h, Label lGeneration) {
                 context.clearRect(0,0,w,h);
                 drawBoard(context);
+                lGeneration.setText("Generation: " + g.getGeneration());
             }
         };
+        g.setTask(task);
         /*ObservableList<String> list = FXCollections.observableArrayList(
                 "Empty", "Glider", "Preset 3", "Preset 4", "Preset 5", "Preset 6");
         ListView<String> lv = new ListView<>(list);
@@ -61,17 +64,20 @@ public class ControllerMain implements Initializable {
     }
 
     @FXML private void bPlay_Pressed(ActionEvent ae){
-        //g.start();
+        //http://stackoverflow.com/questions/22772379/updating-ui-from-different-threads-in-javafx
+        g.work = true;
+        t = new Thread(g);
+        t.setDaemon(true);
+        t.start();
     }
 
     @FXML private void bPause_Pressed(ActionEvent ae){
-
+        g.work = false;
     }
 
     @FXML private void bStep_Pressed(ActionEvent ae){
         g.getNextGeneration();
         task.requestRedraw(g.board);
-        lGeneration.setText("Generation: " + g.getGeneration());
     }
 
     @FXML private void bRuleCreator_Pressed(ActionEvent ae) {
