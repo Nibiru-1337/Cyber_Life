@@ -10,13 +10,15 @@ public class ExpressionBorder extends AbstractExpression {
     private eComparison comp;
     private boolean innerBorder;
     private int howMany;
+    private eState center;
 
-    public ExpressionBorder(eState s, eComparison comp, boolean innerBorder, int howMany) {
+    public ExpressionBorder(eState s, eComparison comp, boolean innerBorder, int howMany, eState center) {
         if ( (innerBorder && 0 < howMany && howMany <= 8) || (!innerBorder && 0 < howMany && howMany <= 16) ){
             this.s = s;
             this.comp = comp;
             this.innerBorder = innerBorder;
             this.howMany = howMany;
+            this.center = center;
         }
         else
             throw new IllegalArgumentException("bad howMany");
@@ -25,6 +27,9 @@ public class ExpressionBorder extends AbstractExpression {
 
     @Override
     public boolean solve(List<List<eState>> neighborhood) {
+        if (!checkCenter(neighborhood, center))
+            return false;
+
         int count = 0;
             for (int x = 0; x < neighborhood.size(); x++)
                 for(int y = 0; y < neighborhood.size(); y++) {

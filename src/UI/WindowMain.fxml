@@ -22,7 +22,8 @@
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
-              <MenuItem mnemonicParsing="false" text="Close" />
+              <MenuItem fx:id="mSave" mnemonicParsing="false" onAction="#save" text="Save" />
+                  <MenuItem mnemonicParsing="false" text="Load" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Edit">
@@ -89,7 +90,7 @@
                                 </rowConstraints>
                                  <children>
                                     <Button mnemonicParsing="false" onAction="#emptyPreset" prefHeight="31.0" prefWidth="271.0" text="Empty Preset" />
-                                    <Button mnemonicParsing="false" onAction="#gliderPreset" prefHeight="31.0" prefWidth="307.0" text="Glider Preset" GridPane.rowIndex="1" />
+                                    <Button mnemonicParsing="false" onAction="#simpleArrowPreset" prefHeight="31.0" prefWidth="307.0" text="Arrow Preset" GridPane.rowIndex="1" />
                                     <Button mnemonicParsing="false" prefHeight="31.0" prefWidth="321.0" text="Preset 3" GridPane.rowIndex="2" />
                                     <Button mnemonicParsing="false" prefHeight="31.0" prefWidth="305.0" text="Preset 4" GridPane.rowIndex="3" />
                                  </children>

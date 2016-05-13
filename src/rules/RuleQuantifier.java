@@ -6,14 +6,20 @@ import java.util.List;
  */
 public class RuleQuantifier extends TreeNode implements iRule{
     private AbstractExpression root;
+    private eState result;
     private TreeNode left;
     private TreeNode right;
 
-    public RuleQuantifier(AbstractExpression root) {
+    public RuleQuantifier(AbstractExpression root, eState res) {
         this.root = root;
+        this.result = res;
+    }
+    public eState getResultingState(){
+        return result;
     }
     @Override
     public boolean check(List<List<eState>> neighborhood) {
+        //TODO: change to solve when we have tree
         return root.solve(neighborhood);
     }
 }

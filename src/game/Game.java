@@ -16,6 +16,7 @@ public class Game implements Runnable{
     private HashSet <Point> active;
     private HashSet <Point> active2;
     private HashMap<List<List<eState>>, eState> discreteRules;
+    private ArrayList<RuleQuantifier> quanitifierRules;
     private int N = 5;
     private int generation;
     private CanvasRedrawTask<HashMap> task;
@@ -28,9 +29,9 @@ public class Game implements Runnable{
         active = new HashSet<>();
         active2 = new HashSet<>();
         discreteRules = new HashMap<List<List<eState>>, eState>();
+        quanitifierRules = new ArrayList<>();
         generation = 0;
     }
-
 
     public List<List<eState>> getNeighborhood(Point xy){
         //initialize arrayList to store neighborhood
@@ -76,25 +77,30 @@ public class Game implements Runnable{
                         active.add(new Point(i, j));
             }
         }
-        //check all the board cells
-        Iterator<Map.Entry<Point, Boolean>> it = board.entrySet().iterator();
         List<List<eState>> neighborhood;
         eState s;
+        //check all the existing board cells
+        Iterator<Map.Entry<Point, Boolean>> it = board.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<Point, Boolean> pair = it.next();
             Point xy = pair.getKey();
             neighborhood = getNeighborhood(pair.getKey());
+            boolean someRuleWasApplied = false;
+            //check if some discrete rule
             s = discreteRules.get(neighborhood);
             if (active.contains(xy) || s != null) {
-                //generate co-ordinates to add as active
-                int offset = N / 2;
-                for (int i = xy.x - offset; i <= xy.x + offset; i++)
-                    for (int j = xy.y - offset; j <= xy.y + offset; j++)
-                        active2.add(new Point(i, j));
                 //copy resulting state to board2
-                board2.put(pair.getKey(), pair.getValue());
-
-            } else {
+                board2.put(xy, pair.getValue());
+                someRuleWasApplied = true;
+            }
+            //check if some quantifier rule applies
+            if (checkQuantifierRulesForPoint(neighborhood, xy))
+                someRuleWasApplied = true;
+            //check if some rule was applied
+            if (someRuleWasApplied){
+                addPointAsActive(xy);
+            }
+            else {
                 //rule does not apply or is not active then copy over to board2
                 board2.put(xy, pair.getValue());
                 active.remove(xy);
@@ -102,21 +108,25 @@ public class Game implements Runnable{
         }
         //check all the active cells
         for (Point xy : active) {
+            boolean someRuleWasApplied = false;
             neighborhood = getNeighborhood(xy);
             s = discreteRules.get(neighborhood);
             if (s != null){
-                //generate co-ordinates to add as active
-                int offset = N / 2;
-                for (int i = xy.x - offset; i <= xy.x + offset; i++)
-                    for (int j = xy.y - offset; j <= xy.y + offset; j++)
-                        active2.add(new Point(i, j));
+                someRuleWasApplied = true;
                 //copy resulting state to board2
                 if (s == eState.ALIVE)
                     board2.put(xy, true);
                 else if (s == eState.DEAD)
                     board2.put(xy, false);
-                else
-                    board2.remove(xy);
+                //else{
+                    //cell is dying
+                  //  board2.remove(xy);
+                //}
+
+            }
+
+            if (someRuleWasApplied){
+                addPointAsActive(xy);
             }
         }
         board = (HashMap<Point, Boolean>) board2.clone();
@@ -130,8 +140,16 @@ public class Game implements Runnable{
         return discreteRules.entrySet().iterator();
     }
 
+    public Iterator<RuleQuantifier> getQuantifierRuleIterator(){
+        return quanitifierRules.iterator();
+    }
+
     public void addDiscreteRule(List<List<eState>>n, eState s){
         this.discreteRules.put(n, s);
+    }
+
+    public void addQuantifierRule(RuleQuantifier qr){
+        quanitifierRules.add(qr);
     }
 
     public void resetGame(){
@@ -158,11 +176,28 @@ public class Game implements Runnable{
         this.task = t;
     }
 
-    private int save(){
-        return 0;
+    private boolean checkQuantifierRulesForPoint(List<List<eState>> neighborhood, Point xy){
+        //iterate over quantifer rules check if neighborhood applies
+        boolean someRuleWasApplied = false;
+        for (int i = 0; i < quanitifierRules.size(); i++){
+            RuleQuantifier rq = quanitifierRules.get(i);
+            if (rq.check(neighborhood)) {
+                someRuleWasApplied = true;
+                if (rq.getResultingState() == eState.ALIVE)
+                    board2.put(xy, true);
+                else if (rq.getResultingState() == eState.DEAD)
+                    board2.put(xy, false);
+            }
+        }
+        return someRuleWasApplied;
     }
-    private int load(){
-        return 0;
+
+    private void addPointAsActive(Point xy){
+        //generate co-ordinates to add as active
+        int offset = N / 2;
+        for (int i = xy.x - offset; i <= xy.x + offset; i++)
+            for (int j = xy.y - offset; j <= xy.y + offset; j++)
+                active2.add(new Point(i, j));
     }
 
     @Override

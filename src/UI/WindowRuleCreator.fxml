@@ -73,23 +73,27 @@
                <children>
                   <FlowPane alignment="CENTER" columnHalignment="CENTER">
                      <children>
-                        <Label text="If a cell is " />
-                        <ChoiceBox fx:id="cbStateCenter" prefHeight="31.0" prefWidth="80.0" />
-                        <Label text="and there are " />
-                        <ChoiceBox fx:id="cbComparison" prefWidth="160.0" />
-                        <TextField prefHeight="31.0" prefWidth="40.0" />
-                        <ChoiceBox fx:id="cbStateCount" prefWidth="80.0" />
-                        <Label text="cells in " />
-                        <ChoiceBox fx:id="cbWhere" prefWidth="125.0" />
-                        <Label text="then the cell should " />
-                        <ChoiceBox fx:id="cbStateResult" prefWidth="100.0" />
+                        <FlowPane fx:id="fpFirstRuleSet" alignment="CENTER" columnHalignment="CENTER">
+                           <children>
+                              <Label text="If a cell is " />
+                              <ChoiceBox fx:id="cbStateCenter" prefHeight="31.0" prefWidth="80.0" />
+                              <Label text="and there are " />
+                              <ChoiceBox fx:id="cbComparison" prefWidth="160.0" />
+                              <TextField prefHeight="31.0" prefWidth="40.0" />
+                              <ChoiceBox fx:id="cbStateCount" prefWidth="80.0" />
+                              <Label text="cells in " />
+                              <ChoiceBox fx:id="cbWhere" prefWidth="125.0" />
+                              <Label text="then the cell should " />
+                              <ChoiceBox fx:id="cbStateResult" prefWidth="100.0" />
+                           </children>
+                        </FlowPane>
                      </children>
                   </FlowPane>
                </children>
             </StackPane>
             <StackPane AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                <children>
-                  <Button mnemonicParsing="false" text="Save rule" />
+                  <Button mnemonicParsing="false" onAction="#bQuantifierSave" text="Save rule" />
                </children>
             </StackPane>
          </children></AnchorPane>

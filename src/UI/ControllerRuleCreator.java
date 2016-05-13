@@ -2,15 +2,20 @@ package UI;
 
 import game.Game;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Separator;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
-import rules.eState;
+import presets.FileProcessor;
+import rules.*;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,6 +35,7 @@ public class ControllerRuleCreator implements Initializable {
     @FXML private ChoiceBox cbStateCount;
     @FXML private ChoiceBox cbStateResult;
     @FXML private ChoiceBox cbWhere;
+    @FXML private FlowPane fpFirstRuleSet;
 
     public ControllerRuleCreator(Game game, ControllerMain cm){
         this.g = game;
@@ -71,7 +77,7 @@ public class ControllerRuleCreator implements Initializable {
         cbStateCount.setItems(FXCollections.observableArrayList("alive", "dead", "empty"));
         cbStateResult.setItems(FXCollections.observableArrayList("live", "die", "disappear"));
         cbComparison.setItems(FXCollections.observableArrayList(
-                "exactly", "less then", "less then or equal", "more then", "more then or equal"));
+                "exactly", "less than", "less than or equal", "more than", "more than or equal"));
         cbWhere.setItems(FXCollections.observableArrayList(
                 "1st row", "2nd row", "3rd row", "4th row", "5th row",
                 "1st column", "2nd column", "3rd column","4th column","5th column",
@@ -100,6 +106,53 @@ public class ControllerRuleCreator implements Initializable {
             g.addDiscreteRule(n, eState.ALIVE);
         else
             g.addDiscreteRule(n, eState.DEAD);
+        mainWindow.putCurrentRules();
+    }
+
+    @FXML private void bQuantifierSave(ActionEvent event) {
+        final ObservableList<Node> children = fpFirstRuleSet.getChildren();
+        String values[] = new String[5];
+        int i = 0;
+        int howMany = 0;
+        for (Node node : children) {
+            if (node instanceof ChoiceBox) {
+                ChoiceBox cb = (ChoiceBox) node;
+                values[i] = cb.getValue().toString();
+                i++;
+            }
+            if (node instanceof TextField) {
+                TextField tf = (TextField) node;
+                howMany = Integer.parseInt(tf.getText());
+            }
+        }
+        eState stateCenter = FileProcessor.getStateFromString(values[0]);
+        eComparison comp = FileProcessor.getCompFromString(values[1]);
+        eState stateCount = FileProcessor.getStateFromString(values[2]);
+        eState stateResult = FileProcessor.getStateFromString(values[4]);
+        String where = values[3];
+
+        AbstractExpression exp = null;
+        String lastWord = where.substring(where.lastIndexOf(" ") + 1);
+        if (lastWord.equals("row")){
+            int row = Integer.parseInt(where.substring(0, 1));
+            exp = new ExpressionRow(row-1, stateCount, comp, howMany, stateCenter);
+        }
+        else if (lastWord.equals("column")){
+            int column = Integer.parseInt(where.substring(0, 1));
+            exp = new ExpressionCol(column-1, stateCount, comp, howMany, stateCenter);
+        }
+        else if (where.equals("neighborhood")){
+            exp = new ExpressionAround(stateCount, comp, howMany, stateCenter);
+        }
+        else if (where.split(" ")[0].equals("inner")){
+            exp = new ExpressionBorder(stateCount, comp, true, howMany, stateCenter);
+        }
+        else if (where.split(" ")[0].equals("outer")){
+            exp = new ExpressionBorder(stateCount, comp, false, howMany, stateCenter);
+        }
+
+        RuleQuantifier qr = new RuleQuantifier(exp, stateResult);
+        g.addQuantifierRule(qr);
         mainWindow.putCurrentRules();
     }
 }

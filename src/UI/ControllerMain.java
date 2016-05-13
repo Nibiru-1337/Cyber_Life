@@ -2,6 +2,8 @@ package UI;
 
 import game.Game;
 import javafx.scene.input.MouseEvent;
+import presets.FileProcessor;
+import rules.RuleQuantifier;
 import rules.eState;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,7 +18,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import java.awt.*;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -26,6 +28,7 @@ public class ControllerMain implements Initializable {
     private int BLOCKSIZE = 10;
     private GraphicsContext gc;
     private Game g;
+    private FileProcessor fp;
     Thread t;
     private CanvasRedrawTask<HashMap> task;
     @FXML private Canvas c;
@@ -37,6 +40,7 @@ public class ControllerMain implements Initializable {
     }
 
     @Override public void initialize(URL location, ResourceBundle resources) {
+        fp = new FileProcessor();
         gc = c.getGraphicsContext2D();
         task = new CanvasRedrawTask<HashMap>(c, lGeneration) {
             @Override
@@ -102,68 +106,8 @@ public class ControllerMain implements Initializable {
         putCurrentRules();
     }
 
-    @FXML private void gliderPreset(ActionEvent event){
-        g.resetGame();
-        gc.clearRect(0,0,c.getWidth(),c.getHeight());
-
-        g.board.put(new Point(-44,-38), true);
-        g.board.put(new Point(-43,-38), true);
-        g.board.put(new Point(-42,-38), true);
-        g.board.put(new Point(-41,-38), true);
-        g.board.put(new Point(-42,-39), true);
-        g.board.put(new Point(-42,-37), true);
-        GraphicsContext gc = c.getGraphicsContext2D();
-        drawBoard(gc);
-
-        List<List<eState>> n;
-        n = g.getEmptyNeighborhood();
-        n.get(0).set(1, eState.ALIVE); //1
-        n.get(0).set(2, eState.ALIVE);
-        n.get(0).set(3, eState.ALIVE);
-        n.get(1).set(2, eState.ALIVE);
-        g.addDiscreteRule(n, eState.ALIVE);
-
-        n = g.getEmptyNeighborhood();
-        n.get(0).set(3, eState.ALIVE); //2
-        n.get(1).set(2, eState.ALIVE);
-        n.get(1).set(3, eState.ALIVE);
-        n.get(1).set(4, eState.ALIVE);
-        n.get(2).set(3, eState.ALIVE);
-        g.addDiscreteRule(n, eState.ALIVE);
-
-        n = g.getEmptyNeighborhood();
-        n.get(0).set(1, eState.ALIVE); //3
-        n.get(1).set(0, eState.ALIVE);
-        n.get(1).set(1, eState.ALIVE);
-        n.get(1).set(2, eState.ALIVE);
-        n.get(2).set(1, eState.ALIVE);
-        g.addDiscreteRule(n, eState.ALIVE);
-
-        n = g.getEmptyNeighborhood();
-        n.get(0).set(3, eState.ALIVE); //4
-        n.get(1).set(3, eState.ALIVE);
-        n.get(2).set(3, eState.ALIVE);
-        n.get(3).set(3, eState.ALIVE);
-        n.get(2).set(4, eState.ALIVE);
-        n.get(2).set(2, eState.ALIVE);
-        g.addDiscreteRule(n, eState.EMPTY);
-
-        n = g.getEmptyNeighborhood();
-        n.get(0).set(1, eState.ALIVE); //5
-        n.get(1).set(1, eState.ALIVE);
-        n.get(2).set(1, eState.ALIVE);
-        n.get(3).set(1, eState.ALIVE);
-        n.get(2).set(0, eState.ALIVE);
-        n.get(2).set(2, eState.ALIVE);
-        g.addDiscreteRule(n, eState.EMPTY);
-
-        n = g.getEmptyNeighborhood();
-        n.get(2).set(2, eState.ALIVE); //6
-        n.get(3).set(2, eState.ALIVE);
-        n.get(4).set(2, eState.ALIVE);
-        g.addDiscreteRule(n, eState.EMPTY);
-
-        putCurrentRules();
+    @FXML private void simpleArrowPreset(ActionEvent event){
+        load("src/presets/SimpleArrow.txt");
     }
 
     @FXML private void canvasClicked(MouseEvent me){
@@ -171,11 +115,24 @@ public class ControllerMain implements Initializable {
         int y = (int) (me.getY() - (int)me.getY()%BLOCKSIZE);
         Point p = new Point();
         p.setLocation(x,y);
-        drawCell(gc,p,BLOCKSIZE);
-        p = translateToHashMapPos(p, BLOCKSIZE);
+        Point hmXY = translateToHashMapPos(p, BLOCKSIZE);
+        if (!g.board.containsKey(hmXY)) {
+            drawCell(gc, p, BLOCKSIZE, eState.ALIVE);
+            g.board.put(hmXY, true);
+        }
+        //if an alive cell was clicked, made it dead
+        else if (g.board.get(hmXY) == true) {
+            drawCell(gc, p, BLOCKSIZE, eState.DEAD);
+            g.board.put(hmXY, false);
+        }
+        //if a dead cell was clicked, make it empty
+        else if (g.board.get(hmXY) == false){
+            drawCell(gc, p, BLOCKSIZE, eState.EMPTY);
+            g.board.remove(hmXY);
+        }
         //System.out.println("x:" + p.x);
         //System.out.println("y:" + p.y);
-        g.board.put(p, true);
+
     }
 
     protected void putCurrentRules(){
@@ -188,27 +145,57 @@ public class ControllerMain implements Initializable {
             //put rule on display
             Label r = new Label();
             r.setPrefWidth(290.0);
-            String name = "Rule #" + Integer.toString(i);
+            String name = "Discrete Rule #" + Integer.toString(i);
+            r.setText(name);
+            fpCurrentRules.getChildren().add(r);
+            i++;
+        }
+        it = g.getQuantifierRuleIterator();
+        while (it.hasNext()) {
+            RuleQuantifier rq = (RuleQuantifier)it.next();
+            //put rule on display
+            Label r = new Label();
+            r.setPrefWidth(290.0);
+            String name = "Quantifier Rule #" + Integer.toString(i);
             r.setText(name);
             fpCurrentRules.getChildren().add(r);
             i++;
         }
     }
 
+    @FXML private void save(){
+        fp.saveToFile("kkk", g.board.entrySet().iterator(), g.getDiscreteRuleIterator());
+    }
+
+    @FXML private void load(String path){
+        g.resetGame();
+        gc.clearRect(0,0,c.getWidth(),c.getHeight());
+        fp.loadFromFile(path, g);
+        GraphicsContext gc = c.getGraphicsContext2D();
+        drawBoard(gc);
+        putCurrentRules();
+    }
+
     private void drawBoard(GraphicsContext gc){
-        Iterator it = g.board.entrySet().iterator();
+        Iterator<Map.Entry<Point, Boolean>> it = g.board.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            //if cell is alive draw it
-            if ((boolean)pair.getValue()){
-                drawCell(gc, translateToCanvasPos((Point)pair.getKey(), BLOCKSIZE), BLOCKSIZE);
-            }
+            Map.Entry<Point, Boolean> pair = it.next();
+            //if cell is alive or dead draw it
+            if (pair.getValue())
+                drawCell(gc, translateToCanvasPos(pair.getKey(), BLOCKSIZE), BLOCKSIZE, eState.ALIVE);
+            else
+                drawCell(gc, translateToCanvasPos(pair.getKey(), BLOCKSIZE), BLOCKSIZE, eState.DEAD);
         }
     }
 
-    private void drawCell(GraphicsContext gc, Point xy, int blocksize){
-        gc.setFill(Color.BLACK);
-        gc.fillRect(xy.x,xy.y,blocksize,blocksize );
+    private void drawCell(GraphicsContext gc, Point xy, int blocksize, eState s){
+        if (s == eState.ALIVE)
+            gc.setFill(Color.BLACK);
+        else if (s == eState.DEAD)
+            gc.setFill(Color.LIGHTCORAL);
+        else if (s == eState.EMPTY)
+            gc.setFill(Color.WHITE);
+        gc.fillRect(xy.x, xy.y, blocksize, blocksize);
     }
 
     private Point translateToCanvasPos(Point xy, int blocksize) {
