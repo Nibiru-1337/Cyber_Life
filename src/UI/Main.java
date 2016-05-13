@@ -14,7 +14,7 @@ public class Main extends Application {
         Game g = new Game();
 
         FXMLLoader firstLoader = new FXMLLoader(getClass().getResource("WindowMain.fxml"));
-        firstLoader.setController(new ControllerMain(g));
+        firstLoader.setController(new ControllerMain(g,primaryStage));
         Parent root = firstLoader.load();
 
         primaryStage.setTitle("Cyber_Life Simulation");

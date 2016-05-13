@@ -1,6 +1,7 @@
 package UI;
 
 import game.Game;
+import javafx.scene.control.SplitPane;
 import javafx.scene.input.MouseEvent;
 import presets.FileProcessor;
 import rules.RuleQuantifier;
@@ -21,7 +22,7 @@ import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
+import javafx.stage.FileChooser;
 
 public class ControllerMain implements Initializable {
     private int N = 5;
@@ -29,17 +30,23 @@ public class ControllerMain implements Initializable {
     private GraphicsContext gc;
     private Game g;
     private FileProcessor fp;
+    private FileChooser fc;
     Thread t;
     private CanvasRedrawTask<HashMap> task;
+    @FXML private Stage root;
     @FXML private Canvas c;
     @FXML private FlowPane fpCurrentRules;
     @FXML private Label lGeneration;
 
-    public ControllerMain(Game game){
+    public ControllerMain(Game game, Stage r){
         this.g = game;
+        this.root = r;
     }
 
     @Override public void initialize(URL location, ResourceBundle resources) {
+        fc = new FileChooser();
+        //Set extension filter
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
         fp = new FileProcessor();
         gc = c.getGraphicsContext2D();
         task = new CanvasRedrawTask<HashMap>(c, lGeneration) {
@@ -107,7 +114,12 @@ public class ControllerMain implements Initializable {
     }
 
     @FXML private void simpleArrowPreset(ActionEvent event){
-        load("src/presets/SimpleArrow.txt");
+        g.resetGame();
+        gc.clearRect(0, 0, c.getWidth(), c.getHeight());
+        fp.loadFromFile("src/presets/SimpleArrow.txt", g);
+        GraphicsContext gc = c.getGraphicsContext2D();
+        drawBoard(gc);
+        putCurrentRules();
     }
 
     @FXML private void canvasClicked(MouseEvent me){
@@ -164,16 +176,22 @@ public class ControllerMain implements Initializable {
     }
 
     @FXML private void save(){
-        fp.saveToFile("kkk", g.board.entrySet().iterator(), g.getDiscreteRuleIterator());
+        File file = fc.showSaveDialog(root);
+        if (file != null) {
+            fp.saveToFile(file.getAbsolutePath(), g.board.entrySet().iterator(), g.getDiscreteRuleIterator());
+        }
     }
 
-    @FXML private void load(String path){
-        g.resetGame();
-        gc.clearRect(0,0,c.getWidth(),c.getHeight());
-        fp.loadFromFile(path, g);
-        GraphicsContext gc = c.getGraphicsContext2D();
-        drawBoard(gc);
-        putCurrentRules();
+    @FXML private void load(){
+        File file = fc.showOpenDialog(root);
+        if (file != null) {
+            g.resetGame();
+            gc.clearRect(0, 0, c.getWidth(), c.getHeight());
+            fp.loadFromFile(file.getAbsolutePath(), g);
+            GraphicsContext gc = c.getGraphicsContext2D();
+            drawBoard(gc);
+            putCurrentRules();
+        }
     }
 
     private void drawBoard(GraphicsContext gc){

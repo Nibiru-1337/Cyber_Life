@@ -7,13 +7,18 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
+import javafx.scene.text.Text;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import presets.FileProcessor;
 import rules.*;
 
@@ -99,6 +104,26 @@ public class ControllerRuleCreator implements Initializable {
                     n.get(x).add(y, eState.DEAD);
             }
         }
+        //check if rule is not stupid
+        if (n.equals(g.getEmptyNeighborhood())){
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            Button b = new Button("OK");
+            b.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    dialogStage.hide();
+                }
+            });
+            VBox vb = new VBox();
+            vb.getChildren().addAll(new Text("Cannot create a rule for empty neighborhood."), b);
+            vb.setAlignment(Pos.CENTER);
+            vb.setPadding(new Insets(5));
+            dialogStage.setScene(new Scene(vb));
+            dialogStage.show();
+            return;
+        }
+
         s = result.getState();
         if (s == 0)
             g.addDiscreteRule(n, eState.EMPTY);
