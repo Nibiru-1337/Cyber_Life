@@ -1,8 +1,12 @@
 package UI;
 
 import game.Game;
-import javafx.scene.control.SplitPane;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
+import javafx.util.Callback;
 import presets.FileProcessor;
 import rules.RuleQuantifier;
 import rules.eState;
@@ -15,7 +19,6 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import java.awt.*;
@@ -33,9 +36,10 @@ public class ControllerMain implements Initializable {
     private FileChooser fc;
     Thread t;
     private CanvasRedrawTask<HashMap> task;
+    ObservableList<Map.Entry> currentRulesList;
     @FXML private Stage root;
     @FXML private Canvas c;
-    @FXML private FlowPane fpCurrentRules;
+    @FXML private ListView lvCurrentRules;
     @FXML private Label lGeneration;
 
     public ControllerMain(Game game, Stage r){
@@ -58,20 +62,7 @@ public class ControllerMain implements Initializable {
             }
         };
         g.setTask(task);
-        /*ObservableList<String> list = FXCollections.observableArrayList(
-                "Empty", "Glider", "Preset 3", "Preset 4", "Preset 5", "Preset 6");
-        ListView<String> lv = new ListView<>(list);
-        lv.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
-            @Override
-            public ListCell<String> call(ListView<String> param) {
-                return new CustomPresetButton();
-            }
-        });
-        spPresets.getChildren().add(lv);
-        //Button pb = new Button();
-        //Button pb2 = new Button();
-        //spPresets.getChildren().add(pb);
-        //spPresets.getChildren().add(pb2);*/
+        currentRulesList = FXCollections.observableArrayList();
     }
 
     @FXML private void bPlay_Pressed(ActionEvent ae){
@@ -111,6 +102,7 @@ public class ControllerMain implements Initializable {
         g.resetGame();
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
         putCurrentRules();
+        lGeneration.setText("Generation: 0");
     }
 
     @FXML private void simpleArrowPreset(ActionEvent event){
@@ -131,16 +123,19 @@ public class ControllerMain implements Initializable {
         if (!g.board.containsKey(hmXY)) {
             drawCell(gc, p, BLOCKSIZE, eState.ALIVE);
             g.board.put(hmXY, true);
+            g.addPointAsActive(hmXY);
         }
         //if an alive cell was clicked, made it dead
         else if (g.board.get(hmXY) == true) {
             drawCell(gc, p, BLOCKSIZE, eState.DEAD);
             g.board.put(hmXY, false);
+            g.addPointAsActive(hmXY);
         }
         //if a dead cell was clicked, make it empty
         else if (g.board.get(hmXY) == false){
             drawCell(gc, p, BLOCKSIZE, eState.EMPTY);
             g.board.remove(hmXY);
+            g.addPointAsActive(hmXY);
         }
         //System.out.println("x:" + p.x);
         //System.out.println("y:" + p.y);
@@ -148,18 +143,14 @@ public class ControllerMain implements Initializable {
     }
 
     protected void putCurrentRules(){
-        fpCurrentRules.getChildren().clear();
-
+        //fpCurrentRules.getChildren().clear();
+        ObservableList<Map.Entry> list = FXCollections.observableArrayList();
         Iterator it = g.getDiscreteRuleIterator();
         int i = 1;
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
-            //put rule on display
-            Label r = new Label();
-            r.setPrefWidth(290.0);
             String name = "Discrete Rule #" + Integer.toString(i);
-            r.setText(name);
-            fpCurrentRules.getChildren().add(r);
+            list.add(pair);
             i++;
         }
         it = g.getQuantifierRuleIterator();
@@ -170,9 +161,16 @@ public class ControllerMain implements Initializable {
             r.setPrefWidth(290.0);
             String name = "Quantifier Rule #" + Integer.toString(i);
             r.setText(name);
-            fpCurrentRules.getChildren().add(r);
+            //fpCurrentRules.getChildren().add(r);
             i++;
         }
+        lvCurrentRules.setItems(list);
+        lvCurrentRules.setCellFactory(new Callback<ListView<Map.Entry>, ListCell<Map.Entry>>() {
+            @Override
+            public ListCell<Map.Entry> call(ListView<Map.Entry> param) {
+                return new DiscreteRuleListCell(list, g);
+            }
+        });
     }
 
     @FXML private void save(){

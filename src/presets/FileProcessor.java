@@ -18,7 +18,7 @@ public class FileProcessor {
     public void saveToFile(String filename, Iterator<Map.Entry<Point, Boolean>> it,
                            Iterator<Map.Entry<java.util.List<java.util.List<eState>>, eState>> it2){
 
-        try (BufferedWriter bw = new BufferedWriter(new PrintWriter("SimpleArrow.txt"))) {
+        try (BufferedWriter bw = new BufferedWriter(new PrintWriter(filename))) {
             //save current board to file
             bw.write("# POINTS\r\npoints\r\n");
             while (it.hasNext()) {

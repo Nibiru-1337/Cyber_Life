@@ -125,6 +125,7 @@ public class ControllerRuleCreator implements Initializable {
         }
 
         s = result.getState();
+        //add rule to container
         if (s == 0)
             g.addDiscreteRule(n, eState.EMPTY);
         else if (s == 1)

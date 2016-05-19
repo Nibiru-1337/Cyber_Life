@@ -148,6 +148,10 @@ public class Game implements Runnable{
         this.discreteRules.put(n, s);
     }
 
+    public void removeDiscreteRule(List<List<eState>> key){
+        discreteRules.remove(key);
+    }
+
     public void addQuantifierRule(RuleQuantifier qr){
         quanitifierRules.add(qr);
     }
@@ -192,7 +196,7 @@ public class Game implements Runnable{
         return someRuleWasApplied;
     }
 
-    private void addPointAsActive(Point xy){
+    public void addPointAsActive(Point xy){
         //generate co-ordinates to add as active
         int offset = N / 2;
         for (int i = xy.x - offset; i <= xy.x + offset; i++)
