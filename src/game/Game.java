@@ -110,6 +110,7 @@ public class Game implements Runnable{
         for (Point xy : active) {
             boolean someRuleWasApplied = false;
             neighborhood = getNeighborhood(xy);
+            //check if some discrete rule applies
             s = discreteRules.get(neighborhood);
             if (s != null){
                 someRuleWasApplied = true;
@@ -118,13 +119,11 @@ public class Game implements Runnable{
                     board2.put(xy, true);
                 else if (s == eState.DEAD)
                     board2.put(xy, false);
-                //else{
-                    //cell is dying
-                  //  board2.remove(xy);
-                //}
-
             }
-
+            //check if some quantifier rule applies
+            if (checkQuantifierRulesForPoint(neighborhood, xy))
+                someRuleWasApplied = true;
+            //check if some rule was applied
             if (someRuleWasApplied){
                 addPointAsActive(xy);
             }
@@ -156,9 +155,14 @@ public class Game implements Runnable{
         quanitifierRules.add(qr);
     }
 
+    public void removeQuantifierRule(RuleQuantifier qr){
+        quanitifierRules.remove(qr);
+    }
+
     public void resetGame(){
         board.clear();
         discreteRules.clear();
+        quanitifierRules.clear();
         generation = 0;
     }
 
@@ -191,6 +195,8 @@ public class Game implements Runnable{
                     board2.put(xy, true);
                 else if (rq.getResultingState() == eState.DEAD)
                     board2.put(xy, false);
+                //stop if we found a rule that applies with highest priority
+                break;
             }
         }
         return someRuleWasApplied;

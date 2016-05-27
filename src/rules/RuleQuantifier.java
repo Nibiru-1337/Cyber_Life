@@ -9,11 +9,19 @@ public class RuleQuantifier extends TreeNode implements iRule{
     private eState result;
     private TreeNode left;
     private TreeNode right;
+    private String text;
 
-    public RuleQuantifier(AbstractExpression root, eState res) {
+    public RuleQuantifier(AbstractExpression root, eState res, String text) {
         this.root = root;
         this.result = res;
+        this.text = text;
     }
+
+    public String getText() {
+        return text;
+    }
+
+
     public eState getResultingState(){
         return result;
     }

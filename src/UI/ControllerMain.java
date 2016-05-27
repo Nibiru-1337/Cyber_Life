@@ -39,7 +39,8 @@ public class ControllerMain implements Initializable {
     ObservableList<Map.Entry> currentRulesList;
     @FXML private Stage root;
     @FXML private Canvas c;
-    @FXML private ListView lvCurrentRules;
+    @FXML private ListView lvDiscreteRules;
+    @FXML private ListView lvQuantifierRules;
     @FXML private Label lGeneration;
 
     public ControllerMain(Game game, Stage r){
@@ -98,14 +99,15 @@ public class ControllerMain implements Initializable {
         }
     }
 
-    @FXML private void emptyPreset(ActionEvent event){
+    @FXML private void emptyPreset_Pressed(ActionEvent event){
         g.resetGame();
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
         putCurrentRules();
         lGeneration.setText("Generation: 0");
+        drawBoardGrid(c);
     }
 
-    @FXML private void simpleArrowPreset(ActionEvent event){
+    @FXML private void simpleArrowPreset_Pressed(ActionEvent event){
         g.resetGame();
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
         fp.loadFromFile("src/presets/SimpleArrow.txt", g);
@@ -142,37 +144,6 @@ public class ControllerMain implements Initializable {
 
     }
 
-    protected void putCurrentRules(){
-        //fpCurrentRules.getChildren().clear();
-        ObservableList<Map.Entry> list = FXCollections.observableArrayList();
-        Iterator it = g.getDiscreteRuleIterator();
-        int i = 1;
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            String name = "Discrete Rule #" + Integer.toString(i);
-            list.add(pair);
-            i++;
-        }
-        it = g.getQuantifierRuleIterator();
-        while (it.hasNext()) {
-            RuleQuantifier rq = (RuleQuantifier)it.next();
-            //put rule on display
-            Label r = new Label();
-            r.setPrefWidth(290.0);
-            String name = "Quantifier Rule #" + Integer.toString(i);
-            r.setText(name);
-            //fpCurrentRules.getChildren().add(r);
-            i++;
-        }
-        lvCurrentRules.setItems(list);
-        lvCurrentRules.setCellFactory(new Callback<ListView<Map.Entry>, ListCell<Map.Entry>>() {
-            @Override
-            public ListCell<Map.Entry> call(ListView<Map.Entry> param) {
-                return new DiscreteRuleListCell(list, g);
-            }
-        });
-    }
-
     @FXML private void save(){
         File file = fc.showSaveDialog(root);
         if (file != null) {
@@ -190,6 +161,56 @@ public class ControllerMain implements Initializable {
             drawBoard(gc);
             putCurrentRules();
         }
+    }
+
+    protected void putCurrentRules(){
+        //fpCurrentRules.getChildren().clear();
+        ObservableList<Map.Entry> discreteList = FXCollections.observableArrayList();
+        ObservableList<RuleQuantifier> quantifierList = FXCollections.observableArrayList();
+
+        Iterator it = g.getDiscreteRuleIterator();
+        int i = 1;
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            String name = "Discrete Rule #" + Integer.toString(i);
+            discreteList.add(pair);
+            i++;
+        }
+        it = g.getQuantifierRuleIterator();
+        while (it.hasNext()) {
+            RuleQuantifier rq = (RuleQuantifier)it.next();
+            String name = "Quantifier Rule #" + Integer.toString(i);
+            quantifierList.add(rq);
+            //fpCurrentRules.getChildren().add(r);
+            i++;
+        }
+        lvDiscreteRules.setItems(discreteList);
+        lvDiscreteRules.setCellFactory(new Callback<ListView<Map.Entry>, ListCell<Map.Entry>>() {
+            @Override
+            public ListCell<Map.Entry> call(ListView<Map.Entry> param) {
+                return new DiscreteRuleListCell(discreteList, g);
+            }
+        });
+        lvQuantifierRules.setItems(quantifierList);
+        lvQuantifierRules.setCellFactory(new Callback<ListView<RuleQuantifier>, ListCell<RuleQuantifier>>() {
+            @Override
+            public ListCell<RuleQuantifier> call(ListView<RuleQuantifier> param) {
+                return new QuantifierRuleListCell(quantifierList, g, lvQuantifierRules);
+            }
+        });
+    }
+
+    //TODO: decide if I want to display an actual grid
+    private void drawBoardGrid(Canvas c) {
+        double w = c.getWidth();
+        double h = c.getHeight();
+        gc.setFill(Color.BLACK);
+        //gc.setStroke(Color.BLACK);
+        gc.setLineWidth(1);
+        for (int x = 0; x < w; x=x+N*2)
+            gc.strokeLine(x,0,x,h);
+        for (int y = 0; y < h; y=y+N*2)
+            gc.strokeLine(0,y,w,y);
     }
 
     private void drawBoard(GraphicsContext gc){
@@ -210,8 +231,8 @@ public class ControllerMain implements Initializable {
         else if (s == eState.DEAD)
             gc.setFill(Color.LIGHTCORAL);
         else if (s == eState.EMPTY)
-            gc.setFill(Color.WHITE);
-        gc.fillRect(xy.x, xy.y, blocksize, blocksize);
+            gc.setFill(Color.rgb(244,244,244));
+        gc.fillRect(xy.x+1, xy.y+1, blocksize-1, blocksize-1);
     }
 
     private Point translateToCanvasPos(Point xy, int blocksize) {

@@ -11,10 +11,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Separator;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
@@ -140,15 +137,25 @@ public class ControllerRuleCreator implements Initializable {
         String values[] = new String[5];
         int i = 0;
         int howMany = 0;
+        String text = "";
+        //iterate over all children of pane
         for (Node node : children) {
+            if (node instanceof Label) {
+                Label l = (Label) node;
+                text = text + l.getText();
+            }
             if (node instanceof ChoiceBox) {
                 ChoiceBox cb = (ChoiceBox) node;
-                values[i] = cb.getValue().toString();
+                String str = cb.getValue().toString();
+                text = text + str;
+                values[i] = str;
                 i++;
             }
             if (node instanceof TextField) {
                 TextField tf = (TextField) node;
-                howMany = Integer.parseInt(tf.getText());
+                String str = tf.getText();
+                howMany = Integer.parseInt(str);
+                text = text + " " + str + " ";
             }
         }
         eState stateCenter = FileProcessor.getStateFromString(values[0]);
@@ -177,7 +184,7 @@ public class ControllerRuleCreator implements Initializable {
             exp = new ExpressionBorder(stateCount, comp, false, howMany, stateCenter);
         }
 
-        RuleQuantifier qr = new RuleQuantifier(exp, stateResult);
+        RuleQuantifier qr = new RuleQuantifier(exp, stateResult, text);
         g.addQuantifierRule(qr);
         mainWindow.putCurrentRules();
     }
