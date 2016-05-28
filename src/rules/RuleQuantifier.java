@@ -21,10 +21,10 @@ public class RuleQuantifier extends TreeNode implements iRule{
         return text;
     }
 
-
     public eState getResultingState(){
         return result;
     }
+
     @Override
     public boolean check(List<List<eState>> neighborhood) {
         //TODO: change to solve when we have tree

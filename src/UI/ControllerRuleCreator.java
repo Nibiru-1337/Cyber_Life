@@ -163,27 +163,7 @@ public class ControllerRuleCreator implements Initializable {
         eState stateCount = FileProcessor.getStateFromString(values[2]);
         eState stateResult = FileProcessor.getStateFromString(values[4]);
         String where = values[3];
-
-        AbstractExpression exp = null;
-        String lastWord = where.substring(where.lastIndexOf(" ") + 1);
-        if (lastWord.equals("row")){
-            int row = Integer.parseInt(where.substring(0, 1));
-            exp = new ExpressionRow(row-1, stateCount, comp, howMany, stateCenter);
-        }
-        else if (lastWord.equals("column")){
-            int column = Integer.parseInt(where.substring(0, 1));
-            exp = new ExpressionCol(column-1, stateCount, comp, howMany, stateCenter);
-        }
-        else if (where.equals("neighborhood")){
-            exp = new ExpressionAround(stateCount, comp, howMany, stateCenter);
-        }
-        else if (where.split(" ")[0].equals("inner")){
-            exp = new ExpressionBorder(stateCount, comp, true, howMany, stateCenter);
-        }
-        else if (where.split(" ")[0].equals("outer")){
-            exp = new ExpressionBorder(stateCount, comp, false, howMany, stateCenter);
-        }
-
+        AbstractExpression exp = FileProcessor.getExpfromStrings(where,stateCount,comp,howMany,stateCenter);
         RuleQuantifier qr = new RuleQuantifier(exp, stateResult, text);
         g.addQuantifierRule(qr);
         mainWindow.putCurrentRules();

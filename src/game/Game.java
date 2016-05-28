@@ -3,6 +3,7 @@ package game;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import UI.CanvasRedrawTask;
 import rules.*;
@@ -11,21 +12,21 @@ import rules.*;
  */
 public class Game implements Runnable{
 
-    public HashMap <Point, Boolean> board;
-    private HashMap <Point, Boolean> board2;
+    public ConcurrentHashMap<Point, Boolean> board;
+    private ConcurrentHashMap <Point, Boolean> board2;
     private HashSet <Point> active;
     private HashSet <Point> active2;
     private HashMap<List<List<eState>>, eState> discreteRules;
     private ArrayList<RuleQuantifier> quanitifierRules;
     private int N = 5;
     private int generation;
-    private CanvasRedrawTask<HashMap> task;
+    private CanvasRedrawTask<ConcurrentHashMap> task;
     public boolean work = false;
 
     public Game() {
         //TODO: give initial size?
-        board = new HashMap<>();
-        board2 = new HashMap<>();
+        board = new ConcurrentHashMap<>();
+        board2 = new ConcurrentHashMap<>();
         active = new HashSet<>();
         active2 = new HashSet<>();
         discreteRules = new HashMap<List<List<eState>>, eState>();
@@ -128,7 +129,7 @@ public class Game implements Runnable{
                 addPointAsActive(xy);
             }
         }
-        board = (HashMap<Point, Boolean>) board2.clone();
+        board = new ConcurrentHashMap<>(board2);
         board2.clear();
         active = (HashSet<Point>) active2.clone();
         active2.clear();
@@ -161,8 +162,9 @@ public class Game implements Runnable{
 
     public void resetGame(){
         board.clear();
-        discreteRules.clear();
-        quanitifierRules.clear();
+        active.clear();
+        //discreteRules.clear();
+        //quanitifierRules.clear();
         generation = 0;
     }
 
@@ -180,7 +182,7 @@ public class Game implements Runnable{
         return generation;
     }
 
-    public void setTask(CanvasRedrawTask<HashMap> t){
+    public void setTask(CanvasRedrawTask<ConcurrentHashMap> t){
         this.task = t;
     }
 

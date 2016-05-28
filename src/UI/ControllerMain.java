@@ -3,8 +3,8 @@ package UI;
 import game.Game;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import presets.FileProcessor;
@@ -18,30 +18,34 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 import javafx.stage.FileChooser;
 
 public class ControllerMain implements Initializable {
     private int N = 5;
-    private int BLOCKSIZE = 10;
+    private int blocksize = 10;
     private GraphicsContext gc;
     private Game g;
     private FileProcessor fp;
     private FileChooser fc;
     Thread t;
-    private CanvasRedrawTask<HashMap> task;
+    private CanvasRedrawTask<ConcurrentHashMap> task;
     ObservableList<Map.Entry> currentRulesList;
     @FXML private Stage root;
     @FXML private Canvas c;
+    @FXML private Canvas cGrid;
     @FXML private ListView lvDiscreteRules;
     @FXML private ListView lvQuantifierRules;
     @FXML private Label lGeneration;
+    @FXML private Spinner sFastForward;
+    @FXML private Spinner sZoom;
 
     public ControllerMain(Game game, Stage r){
         this.g = game;
@@ -50,19 +54,29 @@ public class ControllerMain implements Initializable {
 
     @Override public void initialize(URL location, ResourceBundle resources) {
         fc = new FileChooser();
-        //Set extension filter
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
         fp = new FileProcessor();
         gc = c.getGraphicsContext2D();
-        task = new CanvasRedrawTask<HashMap>(c, lGeneration) {
+        //Set extension filter
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
+        sFastForward.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,100,1));
+        SpinnerValueFactory sZoomFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(3,50,1);
+        sZoomFactory.setValue(10);
+        sZoom.setValueFactory(sZoomFactory);
+        sZoom.valueProperty().addListener((obs, oldValue, newValue) -> {
+                    blocksize = (int) newValue;
+                    drawBoardGrid(cGrid);
+                    drawBoard(gc);
+                });
+        task = new CanvasRedrawTask<ConcurrentHashMap>(c, lGeneration) {
             @Override
-            protected void redraw(GraphicsContext context, HashMap data, double w, double h, Label lGeneration) {
+            protected void redraw(GraphicsContext context, ConcurrentHashMap data, double w, double h, Label lGeneration) {
                 context.clearRect(0,0,w,h);
                 drawBoard(context);
                 lGeneration.setText("Generation: " + g.getGeneration());
             }
         };
         g.setTask(task);
+        drawBoardGrid(cGrid);
         currentRulesList = FXCollections.observableArrayList();
     }
 
@@ -104,7 +118,6 @@ public class ControllerMain implements Initializable {
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
         putCurrentRules();
         lGeneration.setText("Generation: 0");
-        drawBoardGrid(c);
     }
 
     @FXML private void simpleArrowPreset_Pressed(ActionEvent event){
@@ -117,25 +130,25 @@ public class ControllerMain implements Initializable {
     }
 
     @FXML private void canvasClicked(MouseEvent me){
-        int x = (int) (me.getX() - (int)me.getX()%BLOCKSIZE);
-        int y = (int) (me.getY() - (int)me.getY()%BLOCKSIZE);
+        int x = (int) (me.getX() - (int)me.getX()% blocksize);
+        int y = (int) (me.getY() - (int)me.getY()% blocksize);
         Point p = new Point();
         p.setLocation(x,y);
-        Point hmXY = translateToHashMapPos(p, BLOCKSIZE);
+        Point hmXY = translateToHashMapPos(p, blocksize);
         if (!g.board.containsKey(hmXY)) {
-            drawCell(gc, p, BLOCKSIZE, eState.ALIVE);
+            drawCell(gc, p, blocksize, eState.ALIVE);
             g.board.put(hmXY, true);
             g.addPointAsActive(hmXY);
         }
         //if an alive cell was clicked, made it dead
         else if (g.board.get(hmXY) == true) {
-            drawCell(gc, p, BLOCKSIZE, eState.DEAD);
+            drawCell(gc, p, blocksize, eState.DEAD);
             g.board.put(hmXY, false);
             g.addPointAsActive(hmXY);
         }
         //if a dead cell was clicked, make it empty
         else if (g.board.get(hmXY) == false){
-            drawCell(gc, p, BLOCKSIZE, eState.EMPTY);
+            drawCell(gc, p, blocksize, eState.EMPTY);
             g.board.remove(hmXY);
             g.addPointAsActive(hmXY);
         }
@@ -147,7 +160,7 @@ public class ControllerMain implements Initializable {
     @FXML private void save(){
         File file = fc.showSaveDialog(root);
         if (file != null) {
-            fp.saveToFile(file.getAbsolutePath(), g.board.entrySet().iterator(), g.getDiscreteRuleIterator());
+            fp.saveToFile(file.getAbsolutePath(), g.board.entrySet().iterator(), g.getDiscreteRuleIterator(), g.getQuantifierRuleIterator());
         }
     }
 
@@ -200,17 +213,17 @@ public class ControllerMain implements Initializable {
         });
     }
 
-    //TODO: decide if I want to display an actual grid
     private void drawBoardGrid(Canvas c) {
         double w = c.getWidth();
         double h = c.getHeight();
-        gc.setFill(Color.BLACK);
-        //gc.setStroke(Color.BLACK);
-        gc.setLineWidth(1);
-        for (int x = 0; x < w; x=x+N*2)
-            gc.strokeLine(x,0,x,h);
-        for (int y = 0; y < h; y=y+N*2)
-            gc.strokeLine(0,y,w,y);
+        GraphicsContext gc2 = c.getGraphicsContext2D();
+        gc2.clearRect(0,0,w,h);
+        gc2.setFill(Color.BLACK);
+        gc2.setLineWidth(1);
+        for (int x = 0; x < w; x=x+ blocksize)
+            gc2.strokeLine(x,0,x,h);
+        for (int y = 0; y < h; y=y+ blocksize)
+            gc2.strokeLine(0,y,w,y);
     }
 
     private void drawBoard(GraphicsContext gc){
@@ -219,9 +232,9 @@ public class ControllerMain implements Initializable {
             Map.Entry<Point, Boolean> pair = it.next();
             //if cell is alive or dead draw it
             if (pair.getValue())
-                drawCell(gc, translateToCanvasPos(pair.getKey(), BLOCKSIZE), BLOCKSIZE, eState.ALIVE);
+                drawCell(gc, translateToCanvasPos(pair.getKey(), blocksize), blocksize, eState.ALIVE);
             else
-                drawCell(gc, translateToCanvasPos(pair.getKey(), BLOCKSIZE), BLOCKSIZE, eState.DEAD);
+                drawCell(gc, translateToCanvasPos(pair.getKey(), blocksize), blocksize, eState.DEAD);
         }
     }
 

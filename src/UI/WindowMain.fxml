@@ -7,9 +7,9 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -47,6 +47,8 @@
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
         </columnConstraints>
         <rowConstraints>
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -55,9 +57,15 @@
             <Button fx:id="bPlay" mnemonicParsing="false" onAction="#bPlay_Pressed" prefWidth="100.0" text="Play" />
             <Button fx:id="bPause" mnemonicParsing="false" onAction="#bPause_Pressed" prefWidth="100.0" text="Pause" GridPane.columnIndex="1" />
             <Button fx:id="bStep" mnemonicParsing="false" onAction="#bStep_Pressed" prefWidth="100.0" text="Step" GridPane.columnIndex="2" />
-            <TextField alignment="CENTER_RIGHT" GridPane.columnIndex="3" />
             <Button mnemonicParsing="false" text="Fast forward" GridPane.columnIndex="4" />
-            <Label fx:id="lGeneration" text="Generation: 0" GridPane.columnIndex="5" />
+            <Label fx:id="lGeneration" text="Generation: 0" GridPane.columnIndex="7" />
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5">
+               <children>
+                  <Label text="Zoom: " AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+               </children>
+            </AnchorPane>
+            <Spinner fx:id="sZoom" prefHeight="31.0" prefWidth="73.0" GridPane.columnIndex="6" />
+            <Spinner fx:id="sFastForward" prefHeight="31.0" prefWidth="98.0" GridPane.columnIndex="3" />
          </children>
       </GridPane>
       <GridPane prefHeight="900.0" prefWidth="290.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -152,6 +160,7 @@
       </GridPane>
       <Pane prefHeight="800.0" prefWidth="900.0" style="-fx-border-color: black;" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="38.0">
          <children>
+            <Canvas fx:id="cGrid" height="800.0" width="900.0" />
             <Canvas fx:id="c" height="800.0" onMouseClicked="#canvasClicked" width="900.0" />
          </children>
       </Pane>

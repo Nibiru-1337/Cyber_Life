@@ -1,13 +1,14 @@
 package presets;
 
 import game.Game;
-import rules.eComparison;
-import rules.eState;
+import rules.*;
 
 import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Nibiru on 2016-05-11.
@@ -15,14 +16,14 @@ import java.util.List;
 public class FileProcessor {
     int N = 5;
 
-    public void saveToFile(String filename, Iterator<Map.Entry<Point, Boolean>> it,
-                           Iterator<Map.Entry<java.util.List<java.util.List<eState>>, eState>> it2){
+    public void saveToFile(String filename, Iterator<Map.Entry<Point, Boolean>> boardIt,
+                           Iterator<Map.Entry<List<List<eState>>, eState>> discreteIt, Iterator<RuleQuantifier> quantifierIt){
 
         try (BufferedWriter bw = new BufferedWriter(new PrintWriter(filename))) {
             //save current board to file
             bw.write("# POINTS\r\npoints\r\n");
-            while (it.hasNext()) {
-                Map.Entry<Point, Boolean> pair = it.next();
+            while (boardIt.hasNext()) {
+                Map.Entry<Point, Boolean> pair = boardIt.next();
                 Point xy = pair.getKey();
                 boolean isAlive = pair.getValue();
                 bw.write(String.valueOf(xy.x) + "," + String.valueOf(xy.y) + "," + isAlive + "\r\n");
@@ -31,10 +32,11 @@ public class FileProcessor {
             //save current rules to file
             bw.write("# RULES\r\n");
             int i = 0;
-            while (it2.hasNext()) {
+            //save DISCRETE rules
+            while (discreteIt.hasNext()) {
                 bw.write("d" + String.valueOf(i) + "\r\n");
                 Map.Entry<java.util.List<java.util.List<eState>>, eState> pair =
-                        it2.next();
+                        discreteIt.next();
                 java.util.List<java.util.List<eState>> n = pair.getKey();
                 eState result = pair.getValue();
                 for (int x = 0; x < N; x++){
@@ -52,6 +54,13 @@ public class FileProcessor {
                     bw.write("r,empty\r\n");
                 i++;
             }
+            //save QUANTIFIER rules
+            while (quantifierIt.hasNext()) {
+                bw.write("q" + String.valueOf(i) + "\r\n");
+                RuleQuantifier rq = quantifierIt.next();
+                bw.write(rq.getText() + "\r\n");
+                i++;
+            }
         } catch (IOException e) {
             e.printStackTrace();
 
@@ -63,6 +72,7 @@ public class FileProcessor {
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
             boolean readingDiscreteRule = false;
+            boolean readingQuantifierRule = false;
             boolean readingPoints = false;
             List<List<eState>> n = null;
             String[] lineContents;
@@ -72,6 +82,10 @@ public class FileProcessor {
                 else if(line.startsWith("d")) {
                     readingDiscreteRule = true;
                     n = g.getEmptyNeighborhood();
+                }
+                else if (line.startsWith("q")){
+                    readingDiscreteRule = false;
+                    readingQuantifierRule = true;
                 }
                 else if (line.startsWith("r")) {
                     readingDiscreteRule = false;
@@ -87,6 +101,39 @@ public class FileProcessor {
                     lineContents = line.split(",");
                     n.get(Integer.parseInt(lineContents[0])).set(Integer.parseInt(lineContents[1])
                             ,getStateFromString(lineContents[2]));
+                }
+                else if (readingQuantifierRule){
+                    //TODO: parse text of quantifier rule TEST
+                    eState stateCenter = null; eComparison comp = null; eState stateCount = null; eState stateResult = null;
+                    String where = null; int howMany = -1;
+                    Pattern pattern = Pattern.compile("exactly|less than|less than or equal|more than|more than or equal");
+                    Matcher matcher = pattern.matcher(line);
+                    if(matcher.find())
+                        comp = getCompFromString(matcher.group(0));
+                    pattern = Pattern.compile("alive|live|ALIVE|dead|die|DEAD|empty|disappear|EMPTY");
+                    matcher = pattern.matcher(line);
+                    int i = 0;
+                    while(matcher.find()) {
+                        if (i == 0)
+                            stateCenter = getStateFromString(matcher.group(0));
+                        else if (i == 1)
+                            stateCount = getStateFromString(matcher.group(0));
+                        else if (i == 2)
+                            stateResult = getStateFromString(matcher.group(0));
+                        i++;
+                    }
+                    pattern = Pattern.compile("1st row|2nd row|3rd row|4th row|5th row|1st column|2nd column|" +
+                            "3rd column|4th column|5th column|neighborhood|inner border|outer border");
+                    matcher = pattern.matcher(line);
+                    if(matcher.find())
+                        where = matcher.group(0);
+                    pattern = Pattern.compile("\\s([0-9]+)\\s");
+                    matcher = pattern.matcher(line);
+                    if (matcher.find())
+                        howMany = Integer.parseInt(matcher.group(0).trim());
+                    AbstractExpression exp = getExpfromStrings(where,stateCount,comp,howMany,stateCenter);
+                    RuleQuantifier qr = new RuleQuantifier(exp, stateResult, line);
+                    g.addQuantifierRule(qr);
                 }
                 else if (readingPoints){
                     lineContents = line.split(",");
@@ -133,5 +180,28 @@ public class FileProcessor {
             default:
                 return null;
         }
+    }
+
+    static public AbstractExpression getExpfromStrings(String where, eState stateCount, eComparison comp, int howMany, eState stateCenter){
+        AbstractExpression exp = null;
+        String lastWord = where.substring(where.lastIndexOf(" ") + 1);
+        if (lastWord.equals("row")){
+            int row = Integer.parseInt(where.substring(0, 1));
+            exp = new ExpressionRow(row-1, stateCount, comp, howMany, stateCenter);
+        }
+        else if (lastWord.equals("column")){
+            int column = Integer.parseInt(where.substring(0, 1));
+            exp = new ExpressionCol(column-1, stateCount, comp, howMany, stateCenter);
+        }
+        else if (where.equals("neighborhood")){
+            exp = new ExpressionAround(stateCount, comp, howMany, stateCenter);
+        }
+        else if (where.split(" ")[0].equals("inner")){
+            exp = new ExpressionBorder(stateCount, comp, true, howMany, stateCenter);
+        }
+        else if (where.split(" ")[0].equals("outer")){
+            exp = new ExpressionBorder(stateCount, comp, false, howMany, stateCenter);
+        }
+        return exp;
     }
 }
