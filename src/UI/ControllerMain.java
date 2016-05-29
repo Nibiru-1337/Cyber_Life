@@ -121,12 +121,11 @@ public class ControllerMain implements Initializable {
     }
 
     @FXML private void simpleArrowPreset_Pressed(ActionEvent event){
-        g.resetGame();
-        gc.clearRect(0, 0, c.getWidth(), c.getHeight());
-        fp.loadFromFile("src/presets/SimpleArrow.txt", g);
-        GraphicsContext gc = c.getGraphicsContext2D();
-        drawBoard(gc);
-        putCurrentRules();
+        loadPreset("src/presets/presetSimpleArrow.txt");
+    }
+
+    @FXML private void arrowShipsPreset_Pressed(ActionEvent event){
+        loadPreset("src/presets/presetArrowShips.txt");
     }
 
     @FXML private void canvasClicked(MouseEvent me){
@@ -177,7 +176,6 @@ public class ControllerMain implements Initializable {
     }
 
     protected void putCurrentRules(){
-        //fpCurrentRules.getChildren().clear();
         ObservableList<Map.Entry> discreteList = FXCollections.observableArrayList();
         ObservableList<RuleQuantifier> quantifierList = FXCollections.observableArrayList();
 
@@ -194,7 +192,6 @@ public class ControllerMain implements Initializable {
             RuleQuantifier rq = (RuleQuantifier)it.next();
             String name = "Quantifier Rule #" + Integer.toString(i);
             quantifierList.add(rq);
-            //fpCurrentRules.getChildren().add(r);
             i++;
         }
         lvDiscreteRules.setItems(discreteList);
@@ -211,6 +208,15 @@ public class ControllerMain implements Initializable {
                 return new QuantifierRuleListCell(quantifierList, g, lvQuantifierRules);
             }
         });
+    }
+
+    private void loadPreset(String file){
+        g.resetGame();
+        gc.clearRect(0, 0, c.getWidth(), c.getHeight());
+        fp.loadFromFile(file, g);
+        GraphicsContext gc = c.getGraphicsContext2D();
+        drawBoard(gc);
+        putCurrentRules();
     }
 
     private void drawBoardGrid(Canvas c) {

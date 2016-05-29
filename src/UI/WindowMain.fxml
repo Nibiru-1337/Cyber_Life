@@ -100,7 +100,7 @@
                                  <children>
                                     <Button mnemonicParsing="false" onAction="#emptyPreset_Pressed" prefHeight="31.0" prefWidth="271.0" text="Empty Preset" />
                                     <Button mnemonicParsing="false" onAction="#simpleArrowPreset_Pressed" prefHeight="31.0" prefWidth="307.0" text="Arrow Preset" GridPane.rowIndex="1" />
-                                    <Button mnemonicParsing="false" prefHeight="31.0" prefWidth="321.0" text="Preset 3" GridPane.rowIndex="2" />
+                                    <Button mnemonicParsing="false" onAction="#arrowShipsPreset_Pressed" prefHeight="31.0" prefWidth="321.0" text="Arrow Ships" GridPane.rowIndex="2" />
                                     <Button mnemonicParsing="false" prefHeight="31.0" prefWidth="305.0" text="Preset 4" GridPane.rowIndex="3" />
                                  </children>
                               </GridPane>

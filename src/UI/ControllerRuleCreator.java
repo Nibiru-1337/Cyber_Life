@@ -81,9 +81,10 @@ public class ControllerRuleCreator implements Initializable {
         cbComparison.setItems(FXCollections.observableArrayList(
                 "exactly", "less than", "less than or equal", "more than", "more than or equal"));
         cbWhere.setItems(FXCollections.observableArrayList(
-                "1st row", "2nd row", "3rd row", "4th row", "5th row",
-                "1st column", "2nd column", "3rd column","4th column","5th column",
-                "neighborhood", "inner border", "outer border"));
+                "in 1st row", "in 2nd row", "in 3rd row", "in 4th row", "in 5th row",
+                "in 1st column", "in 2nd column", "in 3rd column","in 4th column","in 5th column",
+                "in neighborhood", "in inner border", "in outer border", "above", "below",
+                "to the left", "to the right"));
     }
 
     @FXML private void bDiscreteSave(ActionEvent event) {
@@ -134,7 +135,7 @@ public class ControllerRuleCreator implements Initializable {
 
     @FXML private void bQuantifierSave(ActionEvent event) {
         final ObservableList<Node> children = fpFirstRuleSet.getChildren();
-        String values[] = new String[5];
+        //String values[] = new String[5];
         int i = 0;
         int howMany = 0;
         String text = "";
@@ -148,7 +149,7 @@ public class ControllerRuleCreator implements Initializable {
                 ChoiceBox cb = (ChoiceBox) node;
                 String str = cb.getValue().toString();
                 text = text + str;
-                values[i] = str;
+                //values[i] = str;
                 i++;
             }
             if (node instanceof TextField) {
@@ -158,13 +159,14 @@ public class ControllerRuleCreator implements Initializable {
                 text = text + " " + str + " ";
             }
         }
-        eState stateCenter = FileProcessor.getStateFromString(values[0]);
+        /*eState stateCenter = FileProcessor.getStateFromString(values[0]);
         eComparison comp = FileProcessor.getCompFromString(values[1]);
         eState stateCount = FileProcessor.getStateFromString(values[2]);
         eState stateResult = FileProcessor.getStateFromString(values[4]);
         String where = values[3];
-        AbstractExpression exp = FileProcessor.getExpfromStrings(where,stateCount,comp,howMany,stateCenter);
-        RuleQuantifier qr = new RuleQuantifier(exp, stateResult, text);
+        AbstractExpression exp = FileProcessor.getExpFromStrings(where,stateCount,comp,howMany,stateCenter);
+        RuleQuantifier qr = new RuleQuantifier(exp, stateResult, text);*/
+        RuleQuantifier qr = FileProcessor.getQRuleFromString(text);
         g.addQuantifierRule(qr);
         mainWindow.putCurrentRules();
     }

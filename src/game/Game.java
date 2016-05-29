@@ -95,8 +95,9 @@ public class Game implements Runnable{
                 someRuleWasApplied = true;
             }
             //check if some quantifier rule applies
-            if (checkQuantifierRulesForPoint(neighborhood, xy))
+            else if (checkQuantifierRulesForPoint(neighborhood, xy)) {
                 someRuleWasApplied = true;
+            }
             //check if some rule was applied
             if (someRuleWasApplied){
                 addPointAsActive(xy);
@@ -122,7 +123,7 @@ public class Game implements Runnable{
                     board2.put(xy, false);
             }
             //check if some quantifier rule applies
-            if (checkQuantifierRulesForPoint(neighborhood, xy))
+            else if (checkQuantifierRulesForPoint(neighborhood, xy))
                 someRuleWasApplied = true;
             //check if some rule was applied
             if (someRuleWasApplied){
@@ -163,8 +164,8 @@ public class Game implements Runnable{
     public void resetGame(){
         board.clear();
         active.clear();
-        //discreteRules.clear();
-        //quanitifierRules.clear();
+        discreteRules.clear();
+        quanitifierRules.clear();
         generation = 0;
     }
 

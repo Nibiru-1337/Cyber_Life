@@ -81,7 +81,7 @@
                               <ChoiceBox fx:id="cbComparison" prefWidth="160.0" />
                               <TextField prefHeight="31.0" prefWidth="40.0" />
                               <ChoiceBox fx:id="cbStateCount" prefWidth="80.0" />
-                              <Label text=" cells in " />
+                              <Label text=" cells " />
                               <ChoiceBox fx:id="cbWhere" prefWidth="125.0" />
                               <Label text=" then the cell should " />
                               <ChoiceBox fx:id="cbStateResult" prefWidth="100.0" />

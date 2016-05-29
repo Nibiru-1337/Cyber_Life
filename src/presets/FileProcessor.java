@@ -99,40 +99,11 @@ public class FileProcessor {
                     readingPoints = false;
                 else if (readingDiscreteRule){
                     lineContents = line.split(",");
-                    n.get(Integer.parseInt(lineContents[0])).set(Integer.parseInt(lineContents[1])
+                    n.get((Integer.parseInt(lineContents[0]))).set(Integer.parseInt(lineContents[1])
                             ,getStateFromString(lineContents[2]));
                 }
                 else if (readingQuantifierRule){
-                    //TODO: parse text of quantifier rule TEST
-                    eState stateCenter = null; eComparison comp = null; eState stateCount = null; eState stateResult = null;
-                    String where = null; int howMany = -1;
-                    Pattern pattern = Pattern.compile("exactly|less than|less than or equal|more than|more than or equal");
-                    Matcher matcher = pattern.matcher(line);
-                    if(matcher.find())
-                        comp = getCompFromString(matcher.group(0));
-                    pattern = Pattern.compile("alive|live|ALIVE|dead|die|DEAD|empty|disappear|EMPTY");
-                    matcher = pattern.matcher(line);
-                    int i = 0;
-                    while(matcher.find()) {
-                        if (i == 0)
-                            stateCenter = getStateFromString(matcher.group(0));
-                        else if (i == 1)
-                            stateCount = getStateFromString(matcher.group(0));
-                        else if (i == 2)
-                            stateResult = getStateFromString(matcher.group(0));
-                        i++;
-                    }
-                    pattern = Pattern.compile("1st row|2nd row|3rd row|4th row|5th row|1st column|2nd column|" +
-                            "3rd column|4th column|5th column|neighborhood|inner border|outer border");
-                    matcher = pattern.matcher(line);
-                    if(matcher.find())
-                        where = matcher.group(0);
-                    pattern = Pattern.compile("\\s([0-9]+)\\s");
-                    matcher = pattern.matcher(line);
-                    if (matcher.find())
-                        howMany = Integer.parseInt(matcher.group(0).trim());
-                    AbstractExpression exp = getExpfromStrings(where,stateCount,comp,howMany,stateCenter);
-                    RuleQuantifier qr = new RuleQuantifier(exp, stateResult, line);
+                    RuleQuantifier qr = getQRuleFromString(line);
                     g.addQuantifierRule(qr);
                 }
                 else if (readingPoints){
@@ -144,6 +115,53 @@ public class FileProcessor {
         } catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    public int flipX(int x){
+        if (x == 0)
+            return 4;
+        else if (x == 1)
+            return 3;
+        else if (x == 2)
+            return 2;
+        else if (x == 3)
+            return 1;
+        else
+            return 0;
+    }
+
+    static public RuleQuantifier getQRuleFromString(String s){
+        eState stateCenter = null; eComparison comp = null; eState stateCount = null; eState stateResult = null;
+        String where = null; int howMany = -1;
+        Pattern pattern = Pattern.compile("exactly|less than|less than or equal|more than|more than or equal");
+        Matcher matcher = pattern.matcher(s);
+        if(matcher.find())
+            comp = getCompFromString(matcher.group(0));
+        pattern = Pattern.compile("alive|live|ALIVE|dead|die|DEAD|empty|disappear|EMPTY");
+        matcher = pattern.matcher(s);
+        int i = 0;
+        while(matcher.find()) {
+            if (i == 0)
+                stateCenter = getStateFromString(matcher.group(0));
+            else if (i == 1)
+                stateCount = getStateFromString(matcher.group(0));
+            else if (i == 2)
+                stateResult = getStateFromString(matcher.group(0));
+            i++;
+        }
+        pattern = Pattern.compile("1st row|2nd row|3rd row|4th row|5th row|1st column|2nd column|" +
+                "3rd column|4th column|5th column|neighborhood|inner border|outer border|above|below|" +
+                "left|right");
+        matcher = pattern.matcher(s);
+        if(matcher.find())
+            where = matcher.group(0);
+        pattern = Pattern.compile("\\s([0-9]+)\\s");
+        matcher = pattern.matcher(s);
+        if (matcher.find())
+            howMany = Integer.parseInt(matcher.group(0).trim());
+        AbstractExpression exp = getExpFromStrings(where,stateCount,comp,howMany,stateCenter);
+        RuleQuantifier qr = new RuleQuantifier(exp, stateResult, s);
+        return qr;
     }
 
     static public eState getStateFromString(String s){
@@ -182,7 +200,7 @@ public class FileProcessor {
         }
     }
 
-    static public AbstractExpression getExpfromStrings(String where, eState stateCount, eComparison comp, int howMany, eState stateCenter){
+    static public AbstractExpression getExpFromStrings(String where, eState stateCount, eComparison comp, int howMany, eState stateCenter){
         AbstractExpression exp = null;
         String lastWord = where.substring(where.lastIndexOf(" ") + 1);
         if (lastWord.equals("row")){
@@ -201,6 +219,18 @@ public class FileProcessor {
         }
         else if (where.split(" ")[0].equals("outer")){
             exp = new ExpressionBorder(stateCount, comp, false, howMany, stateCenter);
+        }
+        else if (where.split(" ")[0].equals("above")){
+            exp = new ExpressionAbove(stateCount, comp, howMany, stateCenter);
+        }
+        else if (where.split(" ")[0].equals("below")){
+            exp = new ExpressionBelow(stateCount, comp, howMany, stateCenter);
+        }
+        else if (where.split(" ")[0].equals("left")){
+            exp = new ExpressionLeft(stateCount, comp, howMany, stateCenter);
+        }
+        else if (where.split(" ")[0].equals("right")){
+            exp = new ExpressionRight(stateCount, comp, howMany, stateCenter);
         }
         return exp;
     }
