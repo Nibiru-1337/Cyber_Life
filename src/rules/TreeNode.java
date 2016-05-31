@@ -1,12 +1,7 @@
 package rules;
 
-public class TreeNode {
-    private AbstractExpression expr;
-    private TreeNode left;
-    private TreeNode right;
+import java.util.List;
 
-    public boolean check(int[][] neighboorhood){
-        //TODO: implement recursive check algorithtm
-        return false;
-    }
+public interface TreeNode {
+    boolean solve(List<List<eState>> neighborhood);
 }

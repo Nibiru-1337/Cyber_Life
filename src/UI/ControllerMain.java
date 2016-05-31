@@ -128,6 +128,10 @@ public class ControllerMain implements Initializable {
         loadPreset("src/presets/presetArrowShips.txt");
     }
 
+    @FXML private void dragonsPreset_Pressed(ActionEvent event) {
+        loadPreset("src/presets/presetDragons.txt");
+    }
+
     @FXML private void canvasClicked(MouseEvent me){
         int x = (int) (me.getX() - (int)me.getX()% blocksize);
         int y = (int) (me.getY() - (int)me.getY()% blocksize);

@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by Nibiru on 2016-05-28.
  */
-public class ExpressionAbove extends AbstractExpression {
+public class ExpressionAbove extends AbstractExpression implements TreeNode{
     private eState s;
     private eComparison comp;
     private int howMany;

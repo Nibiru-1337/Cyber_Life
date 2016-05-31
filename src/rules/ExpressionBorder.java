@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by Nibiru on 2016-04-27.
  */
-public class ExpressionBorder extends AbstractExpression {
+public class ExpressionBorder extends AbstractExpression implements TreeNode{
     private eState s;
     private eComparison comp;
     private boolean innerBorder;

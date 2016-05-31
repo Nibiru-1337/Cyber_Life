@@ -159,7 +159,7 @@ public class FileProcessor {
         matcher = pattern.matcher(s);
         if (matcher.find())
             howMany = Integer.parseInt(matcher.group(0).trim());
-        AbstractExpression exp = getExpFromStrings(where,stateCount,comp,howMany,stateCenter);
+        TreeNode exp = getExpFromStrings(where,stateCount,comp,howMany,stateCenter);
         RuleQuantifier qr = new RuleQuantifier(exp, stateResult, s);
         return qr;
     }
@@ -200,7 +200,7 @@ public class FileProcessor {
         }
     }
 
-    static public AbstractExpression getExpFromStrings(String where, eState stateCount, eComparison comp, int howMany, eState stateCenter){
+    static public TreeNode getExpFromStrings(String where, eState stateCount, eComparison comp, int howMany, eState stateCenter){
         AbstractExpression exp = null;
         String lastWord = where.substring(where.lastIndexOf(" ") + 1);
         if (lastWord.equals("row")){
@@ -232,6 +232,6 @@ public class FileProcessor {
         else if (where.split(" ")[0].equals("right")){
             exp = new ExpressionRight(stateCount, comp, howMany, stateCenter);
         }
-        return exp;
+        return (TreeNode) exp;
     }
 }

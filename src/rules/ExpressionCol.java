@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by Nibiru on 2016-04-27.
  */
-public class ExpressionCol extends AbstractExpression {
+public class ExpressionCol extends AbstractExpression implements TreeNode{
     private int col;
     private eState s;
     private eComparison comp;
