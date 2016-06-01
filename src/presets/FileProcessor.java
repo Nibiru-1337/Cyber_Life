@@ -2,6 +2,7 @@ package presets;
 
 import game.Game;
 import rules.*;
+import sun.reflect.generics.tree.Tree;
 
 import java.awt.*;
 import java.io.*;
@@ -133,34 +134,65 @@ public class FileProcessor {
     static public RuleQuantifier getQRuleFromString(String s){
         eState stateCenter = null; eComparison comp = null; eState stateCount = null; eState stateResult = null;
         String where = null; int howMany = -1;
-        Pattern pattern = Pattern.compile("exactly|less than|less than or equal|more than|more than or equal");
-        Matcher matcher = pattern.matcher(s);
-        if(matcher.find())
-            comp = getCompFromString(matcher.group(0));
-        pattern = Pattern.compile("alive|live|ALIVE|dead|die|DEAD|empty|disappear|EMPTY");
-        matcher = pattern.matcher(s);
-        int i = 0;
-        while(matcher.find()) {
-            if (i == 0)
-                stateCenter = getStateFromString(matcher.group(0));
-            else if (i == 1)
-                stateCount = getStateFromString(matcher.group(0));
-            else if (i == 2)
-                stateResult = getStateFromString(matcher.group(0));
-            i++;
+        //for searching a string with regular expressions
+        Pattern pattern; Matcher matcher;
+        //split because rule can be composite
+        String[] parts = s.split("AND|OR");
+        //make an expression for each part
+        ArrayList<TreeNode> exps = new ArrayList<>();
+        for (int i = 0; i < parts.length; i++) {
+            pattern = Pattern.compile("exactly|less than or equal|more than or equal|less than|more than");
+            matcher = pattern.matcher(parts[i]);
+            if (matcher.find())
+                comp = getCompFromString(matcher.group(0));
+            pattern = Pattern.compile("1st row|2nd row|3rd row|4th row|5th row|1st column|2nd column|" +
+                    "3rd column|4th column|5th column|neighborhood|inner border|outer border|above|below|" +
+                    "left|right");
+            matcher = pattern.matcher(parts[i]);
+            if (matcher.find())
+                where = matcher.group(0);
+            pattern = Pattern.compile("\\s([0-9]+)\\s");
+            matcher = pattern.matcher(parts[i]);
+            if (matcher.find()) {
+                howMany = Integer.parseInt(matcher.group(0).trim());
+
+                pattern = Pattern.compile("alive|live|ALIVE|dead|die|DEAD|empty|disappear|EMPTY");
+                matcher = pattern.matcher(parts[i]);
+                int idx = 0; //idx to keep track of which occurance of state we are in
+                while (matcher.find()) {
+                    if (i == 0 && idx == 0)
+                        //if this is the first part then also find center state
+                        stateCenter = getStateFromString(matcher.group(0));
+                    else if (i == parts.length - 1 && ((i == 0 && idx == 2) || (i != 0 && idx == 1)) ) {
+                        //if this is the last part then also find state result
+                        //if rule is composite state will be the second occurance, otherwise it will be third
+                        stateResult = getStateFromString(matcher.group(0));
+                    }
+                    else if (idx == 1)
+                        stateCount = getStateFromString(matcher.group(0));
+                    idx++;
+                }
+            }
+            exps.add(getExpFromStrings(where, stateCount, comp, howMany, stateCenter));
         }
-        pattern = Pattern.compile("1st row|2nd row|3rd row|4th row|5th row|1st column|2nd column|" +
-                "3rd column|4th column|5th column|neighborhood|inner border|outer border|above|below|" +
-                "left|right");
-        matcher = pattern.matcher(s);
-        if(matcher.find())
-            where = matcher.group(0);
-        pattern = Pattern.compile("\\s([0-9]+)\\s");
-        matcher = pattern.matcher(s);
-        if (matcher.find())
-            howMany = Integer.parseInt(matcher.group(0).trim());
-        TreeNode exp = getExpFromStrings(where,stateCount,comp,howMany,stateCenter);
-        RuleQuantifier qr = new RuleQuantifier(exp, stateResult, s);
+        RuleQuantifier qr = null;
+        //if its not a composite rule
+        if ( exps.size() == 1)
+             qr = new RuleQuantifier(exps.get(0), stateResult, s);
+        //if its composite
+        else{
+            //TODO determine logic operator
+            pattern = Pattern.compile("AND|OR");
+            matcher = pattern.matcher(s);
+            TreeNode logicOperator = null;
+            while (matcher.find()) {
+                if (matcher.group(0).equals("AND"))
+                    logicOperator = new ExpressionAND(exps.get(0), exps.get(1));
+                else
+                    logicOperator = new ExpressionOR(exps.get(0), exps.get(1));
+            }
+            qr = new RuleQuantifier(logicOperator, stateResult, s);
+        }
         return qr;
     }
 

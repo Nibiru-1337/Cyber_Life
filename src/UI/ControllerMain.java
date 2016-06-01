@@ -114,13 +114,13 @@ public class ControllerMain implements Initializable {
 
     @FXML private void navigation_Pressed(ActionEvent ae){
         if (ae.getSource() == bUp)
-            yOffset++;
+            yOffset += 10;
         else if (ae.getSource() == bDown)
-            yOffset--;
+            yOffset -= 10;
         else if (ae.getSource() == bLeft)
-            xOffset++;
+            xOffset += 10;
         else
-            xOffset--;
+            xOffset -= 10;
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
         drawBoard(gc);
     }
@@ -145,18 +145,30 @@ public class ControllerMain implements Initializable {
         g.resetGame();
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
         putCurrentRules();
+        xOffset = 0;
+        yOffset = 0;
+        sZoom.getValueFactory().setValue(10);
         lGeneration.setText("Generation: 0");
     }
 
     @FXML private void simpleArrowPreset_Pressed(ActionEvent event){
+        xOffset = 0;
+        yOffset = 0;
+        sZoom.getValueFactory().setValue(10);
         loadPreset("src/presets/presetSimpleArrow.txt");
     }
 
     @FXML private void arrowShipsPreset_Pressed(ActionEvent event){
+        xOffset = 0;
+        yOffset = 0;
+        sZoom.getValueFactory().setValue(10);
         loadPreset("src/presets/presetArrowShips.txt");
     }
 
     @FXML private void dragonsPreset_Pressed(ActionEvent event) {
+        xOffset = 0;
+        yOffset = 0;
+        sZoom.getValueFactory().setValue(10);
         loadPreset("src/presets/presetDragons.txt");
     }
 
@@ -200,7 +212,11 @@ public class ControllerMain implements Initializable {
         if (file != null) {
             g.resetGame();
             gc.clearRect(0, 0, c.getWidth(), c.getHeight());
-            fp.loadFromFile(file.getAbsolutePath(), g);
+            try{
+                fp.loadFromFile(file.getAbsolutePath(), g);}
+            catch (NullPointerException e){
+                ControllerRuleCreator.displayMessage("Bad file format.");
+                return;}
             GraphicsContext gc = c.getGraphicsContext2D();
             drawBoard(gc);
             putCurrentRules();

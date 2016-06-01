@@ -32,12 +32,14 @@ public class ControllerRuleCreator implements Initializable {
     private ControllerMain mainWindow;
     @FXML private GridPane g5x5;
     @FXML private StackPane resultPane;
-    @FXML private ChoiceBox cbStateCenter;
-    @FXML private ChoiceBox cbComparison;
-    @FXML private ChoiceBox cbStateCount;
-    @FXML private ChoiceBox cbStateResult;
-    @FXML private ChoiceBox cbWhere;
+    @FXML private ChoiceBox<String> cbStateCenter;
+    @FXML private ChoiceBox<String> cbComparison;
+    @FXML private ChoiceBox<String> cbStateCount;
+    @FXML private ChoiceBox<String> cbStateResult;
+    @FXML private ChoiceBox<String> cbWhere;
     @FXML private FlowPane fpFirstRuleSet;
+    @FXML private FlowPane fpQuantifier;
+    @FXML private Label lEnd;
 
     public ControllerRuleCreator(Game game, ControllerMain cm){
         this.g = game;
@@ -104,21 +106,7 @@ public class ControllerRuleCreator implements Initializable {
         }
         //check if rule is not stupid
         if (n.equals(g.getEmptyNeighborhood())){
-            Stage dialogStage = new Stage();
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            Button b = new Button("OK");
-            b.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    dialogStage.hide();
-                }
-            });
-            VBox vb = new VBox();
-            vb.getChildren().addAll(new Text("Cannot create a rule for empty neighborhood."), b);
-            vb.setAlignment(Pos.CENTER);
-            vb.setPadding(new Insets(5));
-            dialogStage.setScene(new Scene(vb));
-            dialogStage.show();
+            displayMessage("Cannot create a rule for empty neighborhood.");
             return;
         }
 
@@ -134,40 +122,82 @@ public class ControllerRuleCreator implements Initializable {
     }
 
     @FXML private void bQuantifierSave(ActionEvent event) {
-        final ObservableList<Node> children = fpFirstRuleSet.getChildren();
-        //String values[] = new String[5];
-        int i = 0;
-        int howMany = 0;
-        String text = "";
-        //iterate over all children of pane
-        for (Node node : children) {
-            if (node instanceof Label) {
-                Label l = (Label) node;
-                text = text + l.getText();
+        try{
+            final ObservableList<Node> children = fpQuantifier.getChildren();
+            //String values[] = new String[5];
+            int i = 0;
+            int howMany = 0;
+            String text = "";
+            //iterate over all children of pane
+            for (Node node : children) {
+                if (node instanceof FlowPane){
+                    for (Node child : ((FlowPane) node).getChildren()){
+                        if (child instanceof Label) {
+                            Label l = (Label) child;
+                            text = text + l.getText();
+                        }
+                        if (child instanceof ChoiceBox) {
+                            ChoiceBox cb = (ChoiceBox) child;
+                            String str = cb.getValue().toString();
+                            text = text + str;
+                            //values[i] = str;
+                            i++;
+                        }
+                        if (child instanceof TextField) {
+                            TextField tf = (TextField) child;
+                            String str = tf.getText();
+                            howMany = Integer.parseInt(str);
+                            text = text + " " + str + " ";
+                        }
+                    }
+                }
             }
-            if (node instanceof ChoiceBox) {
-                ChoiceBox cb = (ChoiceBox) node;
-                String str = cb.getValue().toString();
-                text = text + str;
-                //values[i] = str;
-                i++;
-            }
-            if (node instanceof TextField) {
-                TextField tf = (TextField) node;
-                String str = tf.getText();
-                howMany = Integer.parseInt(str);
-                text = text + " " + str + " ";
-            }
+            RuleQuantifier qr = FileProcessor.getQRuleFromString(text);
+            g.addQuantifierRule(qr);
+            mainWindow.putCurrentRules();
+        } catch (NullPointerException | NumberFormatException e){
+            displayMessage("Cannot create such a rule");
         }
-        /*eState stateCenter = FileProcessor.getStateFromString(values[0]);
-        eComparison comp = FileProcessor.getCompFromString(values[1]);
-        eState stateCount = FileProcessor.getStateFromString(values[2]);
-        eState stateResult = FileProcessor.getStateFromString(values[4]);
-        String where = values[3];
-        AbstractExpression exp = FileProcessor.getExpFromStrings(where,stateCount,comp,howMany,stateCenter);
-        RuleQuantifier qr = new RuleQuantifier(exp, stateResult, text);*/
-        RuleQuantifier qr = FileProcessor.getQRuleFromString(text);
-        g.addQuantifierRule(qr);
-        mainWindow.putCurrentRules();
+    }
+
+    @FXML private void makeQuantifierComposite(ActionEvent event){
+        FlowPane fp = new FlowPane();
+        ChoiceBox<String> n1 = new ChoiceBox<String>(FXCollections.observableArrayList(" AND", " OR"));
+        Label n2 = new Label(" there are ");
+        ChoiceBox<String> n3 = new ChoiceBox<String>(FXCollections.observableArrayList(FXCollections.observableArrayList(
+                "exactly", "less than", "less than or equal", "more than", "more than or equal")));
+        TextField n4 = new TextField("");
+        n4.setPrefWidth(41);
+        ChoiceBox<String> n5 = new ChoiceBox<String>(FXCollections.observableArrayList("alive", "dead", "empty"));
+        Label n6 = new Label(" cells ");
+        ChoiceBox<String> n7 = new ChoiceBox<String>(FXCollections.observableArrayList(
+                "in 1st row", "in 2nd row", "in 3rd row", "in 4th row", "in 5th row",
+                "in 1st column", "in 2nd column", "in 3rd column","in 4th column","in 5th column",
+                "in neighborhood", "in inner border", "in outer border", "above", "below",
+                "to the left", "to the right"));
+        fpFirstRuleSet.getChildren().remove(lEnd);
+        fpFirstRuleSet.getChildren().remove(cbStateResult);
+        fp.getChildren().addAll(n1,n2,n3,n4,n5,n6,n7,lEnd,cbStateResult);
+        fp.setAlignment(Pos.CENTER);
+        fpQuantifier.getChildren().add(fp);
+        //lEnd and cbStateResult
+    }
+
+    @FXML static void displayMessage(String msg){
+        Stage dialogStage = new Stage();
+        dialogStage.initModality(Modality.WINDOW_MODAL);
+        Button b = new Button("OK");
+        b.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                dialogStage.hide();
+            }
+        });
+        VBox vb = new VBox();
+        vb.getChildren().addAll(new Text(msg), b);
+        vb.setAlignment(Pos.CENTER);
+        vb.setPadding(new Insets(5));
+        dialogStage.setScene(new Scene(vb));
+        dialogStage.show();
     }
 }

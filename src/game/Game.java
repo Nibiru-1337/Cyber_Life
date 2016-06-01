@@ -15,8 +15,10 @@ public class Game implements Runnable{
 
     public ConcurrentHashMap<Point, Boolean> board;
     private ConcurrentHashMap <Point, Boolean> board2;
-    private HashSet <Point> active;
-    private HashSet <Point> active2;
+    Set<Point> active = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    Set<Point> active2 = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    //private HashSet <Point> active;
+    //private HashSet <Point> active2;
     private HashMap<List<List<eState>>, eState> discreteRules;
     private ArrayList<RuleQuantifier> quanitifierRules;
     private int N = 5;
@@ -29,8 +31,8 @@ public class Game implements Runnable{
         //TODO: give initial size?
         board = new ConcurrentHashMap<>();
         board2 = new ConcurrentHashMap<>();
-        active = new HashSet<>();
-        active2 = new HashSet<>();
+        //active = new HashSet<>();
+        //active2 = new HashSet<>();
         discreteRules = new HashMap<List<List<eState>>, eState>();
         quanitifierRules = new ArrayList<>();
         generation = 0;
@@ -91,7 +93,7 @@ public class Game implements Runnable{
             boolean someRuleWasApplied = false;
             //check if some discrete rule
             s = discreteRules.get(neighborhood);
-            if (active.contains(xy) || s != null) {
+            if (active.contains(xy) && s != null) {
                 //copy resulting state to board2
                 board2.put(xy, pair.getValue());
                 someRuleWasApplied = true;
@@ -134,7 +136,7 @@ public class Game implements Runnable{
         }
         board = new ConcurrentHashMap<>(board2);
         board2.clear();
-        active = (HashSet<Point>) active2.clone();
+        active = new HashSet<>(active2);
         active2.clear();
         generation++;
     }

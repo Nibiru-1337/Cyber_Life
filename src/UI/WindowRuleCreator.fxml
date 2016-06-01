@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<SplitPane fx:id="root" dividerPositions="0.5" maxHeight="-Infinity" maxWidth="0.5" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+<SplitPane fx:id="root" dividerPositions="0.5" maxHeight="-Infinity" maxWidth="820.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="820.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
   <items>
     <AnchorPane minHeight="0.0" minWidth="0.0">
          <children>
@@ -69,9 +69,9 @@
                <font>
                   <Font size="20.0" />
                </font></Label>
-            <StackPane prefHeight="150.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <FlowPane alignment="CENTER" columnHalignment="CENTER">
+                  <FlowPane fx:id="fpQuantifier" alignment="CENTER" columnHalignment="CENTER">
                      <children>
                         <FlowPane fx:id="fpFirstRuleSet" alignment="CENTER" columnHalignment="CENTER">
                            <children>
@@ -83,7 +83,7 @@
                               <ChoiceBox fx:id="cbStateCount" prefWidth="80.0" />
                               <Label text=" cells " />
                               <ChoiceBox fx:id="cbWhere" prefWidth="125.0" />
-                              <Label text=" then the cell should " />
+                              <Label fx:id="lEnd" text=" then the cell should " />
                               <ChoiceBox fx:id="cbStateResult" prefWidth="100.0" />
                            </children>
                         </FlowPane>
@@ -91,11 +91,27 @@
                   </FlowPane>
                </children>
             </StackPane>
-            <StackPane AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <GridPane prefHeight="76.0" prefWidth="131.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
                <children>
-                  <Button mnemonicParsing="false" onAction="#bQuantifierSave" text="Save rule" />
+                  <StackPane>
+                     <children>
+                        <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#makeQuantifierComposite" text="Make rule composite" />
+                     </children>
+                  </StackPane>
+                  <StackPane prefHeight="150.0" prefWidth="200.0" GridPane.rowIndex="1">
+                     <children>
+                        <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#bQuantifierSave" text="Save rule" textAlignment="CENTER" />
+                     </children>
+                  </StackPane>
                </children>
-            </StackPane>
+            </GridPane>
          </children></AnchorPane>
   </items>
 </SplitPane>
