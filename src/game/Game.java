@@ -4,6 +4,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import UI.CanvasRedrawTask;
 import rules.*;
@@ -22,6 +23,7 @@ public class Game implements Runnable{
     private int generation;
     private CanvasRedrawTask<ConcurrentHashMap> task;
     public boolean work = false;
+    public AtomicInteger generationIterations = new AtomicInteger(0);
 
     public Game() {
         //TODO: give initial size?
@@ -215,6 +217,16 @@ public class Game implements Runnable{
 
     @Override
     public void run() {
+        //for calculating x next generations
+        if (generationIterations.get() > 0) {
+            while (generationIterations.get() > 0) {
+                getNextGeneration();
+                generationIterations.decrementAndGet();
+            }
+            task.requestRedraw(board);
+            return;
+        }
+        //for smooth animation
         while (work) {
             try {
                 Thread.sleep(500);

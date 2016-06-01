@@ -4,6 +4,7 @@ import game.Game;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
@@ -31,6 +32,8 @@ import javafx.stage.FileChooser;
 public class ControllerMain implements Initializable {
     private int N = 5;
     private int blocksize = 10;
+    private int xOffset = 0;
+    private int yOffset = 0;
     private GraphicsContext gc;
     private Game g;
     private FileProcessor fp;
@@ -42,10 +45,13 @@ public class ControllerMain implements Initializable {
     @FXML private Canvas c;
     @FXML private Canvas cGrid;
     @FXML private ListView lvDiscreteRules;
-    @FXML private ListView lvQuantifierRules;
+    @FXML private ListView<RuleQuantifier> lvQuantifierRules;
     @FXML private Label lGeneration;
-    @FXML private Spinner sFastForward;
+    @FXML private Spinner<Integer> sFastForward;
+    @FXML private Button bFastForward;
     @FXML private Spinner sZoom;
+    @FXML private Button bUp; @FXML private Button bDown;
+    @FXML private Button bLeft; @FXML private Button bRight;
 
     public ControllerMain(Game game, Stage r){
         this.g = game;
@@ -59,12 +65,17 @@ public class ControllerMain implements Initializable {
         //Set extension filter
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
         sFastForward.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,100,1));
-        SpinnerValueFactory sZoomFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(3,50,1);
-        sZoomFactory.setValue(10);
-        sZoom.setValueFactory(sZoomFactory);
+        bFastForward.setOnAction((val) -> {
+            t = new Thread(g);
+            t.setDaemon(true);
+            g.generationIterations.set(sFastForward.getValue());
+            t.start();
+        });
+        sZoom.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(3,50,10));
         sZoom.valueProperty().addListener((obs, oldValue, newValue) -> {
                     blocksize = (int) newValue;
                     drawBoardGrid(cGrid);
+                    gc.clearRect(0, 0, c.getWidth(), c.getHeight());
                     drawBoard(gc);
                 });
         task = new CanvasRedrawTask<ConcurrentHashMap>(c, lGeneration) {
@@ -78,13 +89,15 @@ public class ControllerMain implements Initializable {
         g.setTask(task);
         drawBoardGrid(cGrid);
         currentRulesList = FXCollections.observableArrayList();
+
     }
 
     @FXML private void bPlay_Pressed(ActionEvent ae){
         //http://stackoverflow.com/questions/22772379/updating-ui-from-different-threads-in-javafx
-        g.work = true;
+        //Set up thread for calculating generations
         t = new Thread(g);
         t.setDaemon(true);
+        g.work = true;
         t.start();
     }
 
@@ -93,8 +106,23 @@ public class ControllerMain implements Initializable {
     }
 
     @FXML private void bStep_Pressed(ActionEvent ae){
-        g.getNextGeneration();
-        task.requestRedraw(g.board);
+        t = new Thread(g);
+        t.setDaemon(true);
+        g.generationIterations.set(1);
+        t.start();
+    }
+
+    @FXML private void navigation_Pressed(ActionEvent ae){
+        if (ae.getSource() == bUp)
+            yOffset++;
+        else if (ae.getSource() == bDown)
+            yOffset--;
+        else if (ae.getSource() == bLeft)
+            xOffset++;
+        else
+            xOffset--;
+        gc.clearRect(0, 0, c.getWidth(), c.getHeight());
+        drawBoard(gc);
     }
 
     @FXML private void bRuleCreator_Pressed(ActionEvent ae) {
@@ -137,7 +165,7 @@ public class ControllerMain implements Initializable {
         int y = (int) (me.getY() - (int)me.getY()% blocksize);
         Point p = new Point();
         p.setLocation(x,y);
-        Point hmXY = translateToHashMapPos(p, blocksize);
+        Point hmXY = translateToHashMapPos(p, blocksize, xOffset, yOffset);
         if (!g.board.containsKey(hmXY)) {
             drawCell(gc, p, blocksize, eState.ALIVE);
             g.board.put(hmXY, true);
@@ -242,9 +270,9 @@ public class ControllerMain implements Initializable {
             Map.Entry<Point, Boolean> pair = it.next();
             //if cell is alive or dead draw it
             if (pair.getValue())
-                drawCell(gc, translateToCanvasPos(pair.getKey(), blocksize), blocksize, eState.ALIVE);
+                drawCell(gc, translateToCanvasPos(pair.getKey(), blocksize, xOffset, yOffset), blocksize, eState.ALIVE);
             else
-                drawCell(gc, translateToCanvasPos(pair.getKey(), blocksize), blocksize, eState.DEAD);
+                drawCell(gc, translateToCanvasPos(pair.getKey(), blocksize, xOffset, yOffset), blocksize, eState.DEAD);
         }
     }
 
@@ -258,19 +286,19 @@ public class ControllerMain implements Initializable {
         gc.fillRect(xy.x+1, xy.y+1, blocksize-1, blocksize-1);
     }
 
-    private Point translateToCanvasPos(Point xy, int blocksize) {
+    private Point translateToCanvasPos(Point xy, int blocksize, int xOffset, int yOffset) {
         //TODO:assuming canvas is 900x800
         Point out = new Point();
-        out.x = 450 + (xy.x * blocksize);
-        out.y = 400 + (xy.y * blocksize);
+        out.x = 450 + (xy.x * blocksize) + (blocksize*xOffset);
+        out.y = 400 + (xy.y * blocksize) + (blocksize*yOffset);
         return out;
     }
 
-    private Point translateToHashMapPos(Point xy, int blocksize){
+    private Point translateToHashMapPos(Point xy, int blocksize, int xOffset, int yOffset){
         //TODO:assuming canvas is 900x800
         Point out = new Point();
-        out.x = (xy.x - 450)/ blocksize;
-        out.y = (xy.y - 400)/ blocksize;
+        out.x = (xy.x - 450)/ blocksize - (blocksize*xOffset);
+        out.y = (xy.y - 400)/ blocksize - (blocksize*yOffset);
         return out;
     }
 }
