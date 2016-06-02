@@ -3,9 +3,12 @@ package UI;
 import game.Game;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import file_stuff.FileProcessor;
@@ -22,6 +25,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import java.awt.*;
+import java.awt.MenuBar;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
@@ -41,6 +45,7 @@ public class ControllerMain implements Initializable {
     Thread t;
     private CanvasRedrawTask<ConcurrentHashMap> task;
     ObservableList<Map.Entry> currentRulesList;
+    ArrayList<Object> thingsToDisable;
     @FXML private Stage root;
     @FXML private Canvas c;
     @FXML private Canvas cGrid;
@@ -55,6 +60,9 @@ public class ControllerMain implements Initializable {
     @FXML private Button bEmpty; @FXML private Button bArrow;
     @FXML private Button bDragons; @FXML private Button bOscillators;
     @FXML private Button bBomb; @FXML private Button bPattern;
+    @FXML private Button bPlay; @FXML private Button bStep;
+    @FXML private Menu mFile;
+
 
     public ControllerMain(Game game, Stage r){
         this.g = game;
@@ -65,6 +73,10 @@ public class ControllerMain implements Initializable {
         fc = new FileChooser();
         fp = new FileProcessor();
         gc = c.getGraphicsContext2D();
+        //things to disable when simulation is running
+        thingsToDisable = new ArrayList<>(11);
+        thingsToDisable.addAll(Arrays.asList(bEmpty,bArrow,bDragons,bOscillators,bBomb,bPattern,
+                bPlay, bStep, bFastForward, mFile));
         //Set extension filter
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
         sFastForward.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,100,1));
@@ -97,7 +109,18 @@ public class ControllerMain implements Initializable {
 
     @FXML private void bPlay_Pressed(ActionEvent ae){
         //http://stackoverflow.com/questions/22772379/updating-ui-from-different-threads-in-javafx
-        //Set up thread for calculating generations
+        //Set up thread for calculating generations and disable thing we dont want user to do while simulating
+        for (Object o : thingsToDisable){
+            if (o instanceof  Menu){
+                Menu m = (Menu)o;
+                m.setDisable(true);
+            }
+            else{
+                Node n = (Node)o;
+                n.setDisable(true);
+            }
+        }
+
         t = new Thread(g);
         t.setDaemon(true);
         g.work = true;
@@ -106,15 +129,20 @@ public class ControllerMain implements Initializable {
 
     @FXML private void bPause_Pressed(ActionEvent ae){
         g.work = false;
+        //enable buttons when simulation is not running
+        for (Object o : thingsToDisable){
+            if (o instanceof  Menu){
+                Menu m = (Menu)o;
+                m.setDisable(false);
+            }
+            else{
+                Node n = (Node)o;
+                n.setDisable(false);
+            }
+        }
     }
 
     @FXML private void bStep_Pressed(ActionEvent ae){
-        g.work = false;
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         t = new Thread(g);
         t.setDaemon(true);
         g.generationIterations.set(1);
@@ -151,12 +179,6 @@ public class ControllerMain implements Initializable {
     }
 
     @FXML private void preset_Pressed(ActionEvent ae){
-        g.work = false;
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         Button pressed = (Button) ae.getSource();
         if (pressed == bEmpty){
             resetPositioning();
@@ -271,6 +293,7 @@ public class ControllerMain implements Initializable {
         GraphicsContext gc = c.getGraphicsContext2D();
         drawBoard(gc);
         putCurrentRules();
+        lGeneration.setText("Generation: 0");
     }
 
     private void resetPositioning(){
@@ -331,11 +354,16 @@ public class ControllerMain implements Initializable {
     }
 
     @FXML private void displayHelp(ActionEvent event){
-        ControllerRuleCreator.displayMessage("                      Developed with ♥ by Kamil Breński :)\n" +
-                "A project during my studies in Warsaw Univeristy of Technology.\n\n" +
-                "If anyone is wondering composite quantifier rules have order of operations\n" +
-                "                   hardcoded as leftmost to rightmost.\n\n" +
-                "Also behavior of loading presets, fast forwarding, stepping, while a simulation\n" +
-                "           is ongoing is UNDEFINED ! please pause the simulation first!\n");
+        ControllerRuleCreator.displayMessage("\n                      Developed with ♥ by Kamil Breński :)\n" +
+                "                           e-mail: 3psilion@gmail.com\n\n" +
+                " A project developed during my studies in Warsaw Univeristy of Technology.\n\n" +
+                " If anyone is wondering composite quantifier rules have order of operations\n" +
+                "                       hardcoded as leftmost to rightmost.\n\n" +
+                " Also behavior of loading presets, fast forwarding, stepping, while a simulation\n" +
+                "           is ongoing is UNDEFINED ! (that's why I disable the controls)\n\n" +
+                " Discrete rules do not have priority within themselves (they don't need it)\n" +
+                " but they are always evaluated before any quantifier rules, quantifier rules\n" +
+                " do have priority within themselves and they should always be created\n" +
+                "                       in order of biggest to lowest priority.\n");
     }
 }

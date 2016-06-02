@@ -15,10 +15,10 @@ public class Game implements Runnable{
 
     public ConcurrentHashMap<Point, Boolean> board;
     private ConcurrentHashMap <Point, Boolean> board2;
-    private ConcurrentHashMap <Point, Boolean>active;
-    private ConcurrentHashMap <Point, Boolean>active2;
-    //private HashSet <Point> active;
-    //private HashSet <Point> active2;
+    //Set<Point> active = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    //Set<Point> active2 = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private HashSet <Point> active;
+    private HashSet <Point> active2;
     private HashMap<List<List<eState>>, eState> discreteRules;
     private ArrayList<RuleQuantifier> quanitifierRules;
     private int N = 5;
@@ -31,10 +31,8 @@ public class Game implements Runnable{
         //TODO: give initial size?
         board = new ConcurrentHashMap<>();
         board2 = new ConcurrentHashMap<>();
-        active = new ConcurrentHashMap();
-        active2 = new ConcurrentHashMap();
-        //active = new HashSet<>();
-        //active2 = new HashSet<>();
+        active = new HashSet<>();
+        active2 = new HashSet<>();
         discreteRules = new HashMap<List<List<eState>>, eState>();
         quanitifierRules = new ArrayList<>();
         generation = 0;
@@ -81,7 +79,7 @@ public class Game implements Runnable{
                 int offset = N / 2;
                 for (int i = xy.x - offset; i <= xy.x + offset; i++)
                     for (int j = xy.y - offset; j <= xy.y + offset; j++)
-                        active.put(new Point(i, j), false);
+                        active.add(new Point(i, j));
             }
         }
         List<List<eState>> neighborhood;
@@ -115,7 +113,7 @@ public class Game implements Runnable{
             }
         }
         //check all the active cells
-        for (Point xy : active.keySet()) {
+        for (Point xy : active) {
             boolean someRuleWasApplied = false;
             neighborhood = getNeighborhood(xy);
             //check if some discrete rule applies
@@ -138,7 +136,7 @@ public class Game implements Runnable{
         }
         board = new ConcurrentHashMap<>(board2);
         board2.clear();
-        active = new ConcurrentHashMap<>(active2);
+        active = new HashSet<>(active2);
         active2.clear();
         generation++;
     }
@@ -216,7 +214,7 @@ public class Game implements Runnable{
         int offset = N / 2;
         for (int i = xy.x - offset; i <= xy.x + offset; i++)
             for (int j = xy.y - offset; j <= xy.y + offset; j++)
-                active2.put(new Point(i, j), false);
+                active2.add(new Point(i, j));
     }
 
     @Override
