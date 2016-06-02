@@ -29,7 +29,7 @@
           </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
-              <MenuItem mnemonicParsing="false" text="About" />
+              <MenuItem mnemonicParsing="false" onAction="#displayHelp" text="Help &amp; About" />
             </items>
           </Menu>
         </menus>
@@ -121,10 +121,12 @@
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 </rowConstraints>
                                  <children>
-                                    <Button mnemonicParsing="false" onAction="#emptyPreset_Pressed" prefHeight="31.0" prefWidth="271.0" text="Empty Preset" />
-                                    <Button mnemonicParsing="false" onAction="#simpleArrowPreset_Pressed" prefHeight="31.0" prefWidth="307.0" text="Arrow Preset" GridPane.rowIndex="1" />
-                                    <Button mnemonicParsing="false" onAction="#arrowShipsPreset_Pressed" prefHeight="31.0" prefWidth="321.0" text="Arrow Ships" GridPane.rowIndex="2" />
-                                    <Button mnemonicParsing="false" onAction="#dragonsPreset_Pressed" prefHeight="31.0" prefWidth="305.0" text="Dragons" GridPane.rowIndex="3" />
+                                    <Button fx:id="bEmpty" mnemonicParsing="false" onAction="#preset_Pressed" prefHeight="31.0" prefWidth="271.0" text="Empty Preset" />
+                                    <Button fx:id="bOscillators" mnemonicParsing="false" onAction="#preset_Pressed" prefHeight="31.0" prefWidth="307.0" text="Oscillators" GridPane.rowIndex="3" />
+                                    <Button fx:id="bArrow" mnemonicParsing="false" onAction="#preset_Pressed" prefHeight="31.0" prefWidth="321.0" text="Arrow Ships" GridPane.rowIndex="1" />
+                                    <Button fx:id="bDragons" mnemonicParsing="false" onAction="#preset_Pressed" prefHeight="31.0" prefWidth="305.0" text="Dragons" GridPane.rowIndex="2" />
+                                    <Button fx:id="bBomb" mnemonicParsing="false" onAction="#preset_Pressed" prefHeight="31.0" prefWidth="279.0" text="Atom Bomb" GridPane.rowIndex="4" />
+                                    <Button fx:id="bPattern" mnemonicParsing="false" onAction="#preset_Pressed" prefHeight="31.0" prefWidth="283.0" text="Cool Pattern" GridPane.rowIndex="5" />
                                  </children>
                               </GridPane>
                            </children></AnchorPane>

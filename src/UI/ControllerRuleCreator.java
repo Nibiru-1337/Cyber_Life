@@ -16,7 +16,7 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import presets.FileProcessor;
+import file_stuff.FileProcessor;
 import rules.*;
 
 import java.net.URL;
@@ -160,7 +160,7 @@ public class ControllerRuleCreator implements Initializable {
         }
     }
 
-    @FXML private void makeQuantifierComposite(ActionEvent event){
+    @FXML private void addQuantifierComposite(ActionEvent event){
         FlowPane fp = new FlowPane();
         ChoiceBox<String> n1 = new ChoiceBox<String>(FXCollections.observableArrayList(" AND", " OR"));
         Label n2 = new Label(" there are ");
@@ -181,6 +181,18 @@ public class ControllerRuleCreator implements Initializable {
         fp.setAlignment(Pos.CENTER);
         fpQuantifier.getChildren().add(fp);
         //lEnd and cbStateResult
+    }
+
+    @FXML private void removeQuantifierComposite(ActionEvent event){
+        //move two last parts to almost last flow pane
+        if (fpQuantifier.getChildren().size() != 1) {
+            FlowPane almostLast = (FlowPane) fpQuantifier.getChildren().get(fpQuantifier.getChildren().size() - 2);
+            almostLast.getChildren().addAll(lEnd, cbStateResult);
+            //remove last flow pane
+            fpQuantifier.getChildren().remove(fpQuantifier.getChildren().size() - 1);
+        }
+        else
+            displayMessage("Cannot remove the only part.");
     }
 
     @FXML static void displayMessage(String msg){

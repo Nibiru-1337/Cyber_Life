@@ -1,0 +1,10 @@
+# POINTS
+points
+0,-2,true
+-1,-1,true
+0,-1,true
+-1,-2,true
+points END
+# RULES
+q0
+If a cell is empty and there are exactly 2 alive cells in neighborhood then the cell should live

@@ -15,8 +15,8 @@ public class Game implements Runnable{
 
     public ConcurrentHashMap<Point, Boolean> board;
     private ConcurrentHashMap <Point, Boolean> board2;
-    Set<Point> active = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    Set<Point> active2 = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private ConcurrentHashMap <Point, Boolean>active;
+    private ConcurrentHashMap <Point, Boolean>active2;
     //private HashSet <Point> active;
     //private HashSet <Point> active2;
     private HashMap<List<List<eState>>, eState> discreteRules;
@@ -31,6 +31,8 @@ public class Game implements Runnable{
         //TODO: give initial size?
         board = new ConcurrentHashMap<>();
         board2 = new ConcurrentHashMap<>();
+        active = new ConcurrentHashMap();
+        active2 = new ConcurrentHashMap();
         //active = new HashSet<>();
         //active2 = new HashSet<>();
         discreteRules = new HashMap<List<List<eState>>, eState>();
@@ -79,7 +81,7 @@ public class Game implements Runnable{
                 int offset = N / 2;
                 for (int i = xy.x - offset; i <= xy.x + offset; i++)
                     for (int j = xy.y - offset; j <= xy.y + offset; j++)
-                        active.add(new Point(i, j));
+                        active.put(new Point(i, j), false);
             }
         }
         List<List<eState>> neighborhood;
@@ -113,7 +115,7 @@ public class Game implements Runnable{
             }
         }
         //check all the active cells
-        for (Point xy : active) {
+        for (Point xy : active.keySet()) {
             boolean someRuleWasApplied = false;
             neighborhood = getNeighborhood(xy);
             //check if some discrete rule applies
@@ -136,7 +138,7 @@ public class Game implements Runnable{
         }
         board = new ConcurrentHashMap<>(board2);
         board2.clear();
-        active = new HashSet<>(active2);
+        active = new ConcurrentHashMap<>(active2);
         active2.clear();
         generation++;
     }
@@ -214,7 +216,7 @@ public class Game implements Runnable{
         int offset = N / 2;
         for (int i = xy.x - offset; i <= xy.x + offset; i++)
             for (int j = xy.y - offset; j <= xy.y + offset; j++)
-                active2.add(new Point(i, j));
+                active2.put(new Point(i, j), false);
     }
 
     @Override
@@ -231,7 +233,8 @@ public class Game implements Runnable{
         //for smooth animation
         while (work) {
             try {
-                Thread.sleep(500);
+                if (active.size() <= 7000)
+                    Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

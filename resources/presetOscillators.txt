@@ -1,0 +1,176 @@
+# POINTS
+points
+27,21,true
+27,23,true
+-27,23,true
+-26,23,true
+27,17,true
+-29,23,true
+-28,-23,true
+-28,23,true
+27,19,true
+-31,23,true
+-30,23,true
+-28,-27,true
+28,-27,true
+28,-25,true
+-28,-25,true
+24,-27,true
+-28,-29,true
+24,-25,true
+-32,23,true
+26,22,true
+23,-26,true
+27,22,true
+-27,22,true
+28,18,true
+-27,-24,true
+-27,24,true
+-28,-24,true
+26,18,true
+-29,-24,true
+27,18,true
+-31,22,true
+28,22,true
+27,20,true
+-31,24,true
+-28,-28,true
+-29,-28,true
+-28,-26,true
+28,-26,true
+29,-26,true
+26,-26,true
+27,-26,true
+24,-26,true
+25,-26,true
+-27,-28,true
+points END
+# RULES
+d0
+1,0,ALIVE
+1,4,ALIVE
+2,0,ALIVE
+2,1,ALIVE
+2,2,ALIVE
+2,3,ALIVE
+2,4,ALIVE
+3,0,ALIVE
+3,4,ALIVE
+r,alive
+d1
+0,1,ALIVE
+0,2,ALIVE
+0,3,ALIVE
+1,2,ALIVE
+2,2,ALIVE
+3,2,ALIVE
+4,1,ALIVE
+4,2,ALIVE
+4,3,ALIVE
+r,alive
+d2
+0,1,ALIVE
+0,2,ALIVE
+0,3,ALIVE
+1,0,DEAD
+1,2,ALIVE
+1,4,DEAD
+2,0,DEAD
+2,1,DEAD
+2,2,ALIVE
+2,3,DEAD
+2,4,DEAD
+3,0,DEAD
+3,2,ALIVE
+3,4,DEAD
+4,1,ALIVE
+4,2,ALIVE
+4,3,ALIVE
+r,alive
+d3
+0,1,DEAD
+0,2,DEAD
+0,3,DEAD
+1,0,ALIVE
+1,2,DEAD
+1,4,ALIVE
+2,0,ALIVE
+2,1,ALIVE
+2,2,ALIVE
+2,3,ALIVE
+2,4,ALIVE
+3,0,ALIVE
+3,2,DEAD
+3,4,ALIVE
+4,1,DEAD
+4,2,DEAD
+4,3,DEAD
+r,alive
+q4
+If a cell is alive and there are more than or equal 3 alive cells in 3rd column then the cell should die
+q5
+If a cell is alive and there are exactly 1 alive cells in 3rd column then the cell should die
+q6
+If a cell is empty and there are more than 5 alive cells to the right AND there are exactly 1 alive cells in 2nd row AND there are exactly 1 alive cells in 4th row then the cell should live
+q7
+If a cell is empty and there are more than 5 alive cells to the left AND there are exactly 1 alive cells in 2nd row AND there are exactly 1 alive cells in 4th row then the cell should live
+q8
+If a cell is empty and there are exactly 1 alive cells in 1st row AND there are exactly 1 alive cells in 5th row AND there are exactly 2 alive cells in 5th column then the cell should live
+q9
+If a cell is empty and there are exactly 1 alive cells in 1st row AND there are exactly 1 alive cells in 5th row AND there are exactly 2 alive cells in 1st column then the cell should live
+q10
+If a cell is empty and there are exactly 5 alive cells in 5th column AND there are exactly 2 alive cells in 2nd row then the cell should live
+q11
+If a cell is empty and there are exactly 5 alive cells in 5th column AND there are exactly 2 alive cells in 4th row then the cell should live
+q12
+If a cell is empty and there are exactly 5 alive cells in 1st column AND there are exactly 2 alive cells in 4th row then the cell should live
+q13
+If a cell is empty and there are exactly 5 alive cells in 1st column AND there are exactly 2 alive cells in 2nd row then the cell should live
+q14
+If a cell is empty and there are more than 5 alive cells to the above AND there are exactly 1 alive cells in 2nd column AND there are exactly 1 alive cells in 4th column then the cell should live
+q15
+If a cell is empty and there are more than 5 alive cells to the below AND there are exactly 1 alive cells in 2nd column AND there are exactly 1 alive cells in 4th column then the cell should live
+q16
+If a cell is empty and there are exactly 1 alive cells in 1st column AND there are exactly 1 alive cells in 5th column AND there are exactly 2 alive cells in 5th row then the cell should live
+q17
+If a cell is empty and there are exactly 1 alive cells in 1st column AND there are exactly 1 alive cells in 5th column AND there are exactly 2 alive cells in 1st row then the cell should live
+q18
+If a cell is empty and there are exactly 5 alive cells in 5th row AND there are exactly 2 alive cells in 2nd column then the cell should live
+q19
+If a cell is empty and there are exactly 5 alive cells in 5th row AND there are exactly 2 alive cells in 4th column then the cell should live
+q20
+If a cell is empty and there are exactly 5 alive cells in 1st row AND there are exactly 2 alive cells in 4th column then the cell should live
+q21
+If a cell is empty and there are exactly 5 alive cells in 1st row AND there are exactly 2 alive cells in 2nd column then the cell should live
+q22
+If a cell is dead and there are more than 5 alive cells to the above AND there are exactly 1 alive cells in 2nd column AND there are exactly 1 alive cells in 4th column then the cell should live
+q23
+If a cell is dead and there are more than 5 alive cells to the below AND there are exactly 1 alive cells in 2nd column AND there are exactly 1 alive cells in 4th column then the cell should live
+q24
+If a cell is dead and there are exactly 1 alive cells in 1st column AND there are exactly 1 alive cells in 5th column AND there are exactly 2 alive cells in 5th row then the cell should live
+q25
+If a cell is dead and there are exactly 1 alive cells in 1st column AND there are exactly 1 alive cells in 5th column AND there are exactly 2 alive cells in 1st row then the cell should live
+q26
+If a cell is dead and there are exactly 5 alive cells in 5th row AND there are exactly 2 alive cells in 2nd column then the cell should live
+q27
+If a cell is dead and there are exactly 5 alive cells in 5th row AND there are exactly 2 alive cells in 4th column then the cell should live
+q28
+If a cell is dead and there are exactly 5 alive cells in 1st row AND there are exactly 2 alive cells in 4th column then the cell should live
+q29
+If a cell is dead and there are exactly 5 alive cells in 1st row AND there are exactly 2 alive cells in 2nd column then the cell should live
+q30
+If a cell is dead and there are more than 5 alive cells to the right AND there are exactly 1 alive cells in 2nd row AND there are exactly 1 alive cells in 4th row then the cell should live
+q31
+If a cell is dead and there are more than 5 alive cells to the left AND there are exactly 1 alive cells in 2nd row AND there are exactly 1 alive cells in 4th row then the cell should live
+q32
+If a cell is dead and there are exactly 1 alive cells in 1st row AND there are exactly 1 alive cells in 5th row AND there are exactly 2 alive cells in 5th column then the cell should live
+q33
+If a cell is dead and there are exactly 1 alive cells in 1st row AND there are exactly 1 alive cells in 5th row AND there are exactly 2 alive cells in 1st column then the cell should live
+q34
+If a cell is dead and there are exactly 5 alive cells in 5th column AND there are exactly 2 alive cells in 2nd row then the cell should live
+q35
+If a cell is dead and there are exactly 5 alive cells in 5th column AND there are exactly 2 alive cells in 4th row then the cell should live
+q36
+If a cell is dead and there are exactly 5 alive cells in 1st column AND there are exactly 2 alive cells in 4th row then the cell should live
+q37
+If a cell is dead and there are exactly 5 alive cells in 1st column AND there are exactly 2 alive cells in 2nd row then the cell should live

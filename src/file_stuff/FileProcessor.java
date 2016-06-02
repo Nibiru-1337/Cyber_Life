@@ -1,4 +1,4 @@
-package presets;
+package file_stuff;
 
 import game.Game;
 import rules.*;
@@ -69,8 +69,16 @@ public class FileProcessor {
     }
 
     public void loadFromFile(String filename, Game g){
-        //lead contents of file
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+        BufferedReader br;
+        //lead contents of file, if it starts with R it need to be taken as resource from jar
+        try  {
+            if (filename.startsWith("R")) {
+                filename = filename.substring(1);
+                InputStream in = getClass().getResourceAsStream(filename);
+                br = new BufferedReader(new InputStreamReader(in));
+            }
+            else
+                br = new BufferedReader(new FileReader(filename));
             String line;
             boolean readingDiscreteRule = false;
             boolean readingQuantifierRule = false;
@@ -132,11 +140,12 @@ public class FileProcessor {
     }
 
     static public RuleQuantifier getQRuleFromString(String s){
-        eState stateCenter = null; eComparison comp = null; eState stateCount = null; eState stateResult = null;
-        String where = null; int howMany = -1;
+        //variables needed for creating a quantifier rule
+        eState stateCenter = null; eComparison comp = null; eState stateCount = null;
+        eState stateResult = null; String where = null; int howMany = -1;
         //for searching a string with regular expressions
         Pattern pattern; Matcher matcher;
-        //split because rule can be composite
+        //split because a rule can be composite
         String[] parts = s.split("AND|OR");
         //make an expression for each part
         ArrayList<TreeNode> exps = new ArrayList<>();
@@ -179,19 +188,33 @@ public class FileProcessor {
         //if its not a composite rule
         if ( exps.size() == 1)
              qr = new RuleQuantifier(exps.get(0), stateResult, s);
-        //if its composite
+        //if its composite iterate over all expressions
         else{
-            //TODO determine logic operator
+            //build proper tree
+            //order of operations is from leftmost to rightmost
             pattern = Pattern.compile("AND|OR");
             matcher = pattern.matcher(s);
-            TreeNode logicOperator = null;
+            TreeNode tree = null;
             while (matcher.find()) {
-                if (matcher.group(0).equals("AND"))
-                    logicOperator = new ExpressionAND(exps.get(0), exps.get(1));
-                else
-                    logicOperator = new ExpressionOR(exps.get(0), exps.get(1));
+                //if we didnt start building tree
+                if (tree == null) {
+                    if (matcher.group(0).equals("AND"))
+                        tree = new ExpressionAND(exps.get(0), exps.get(1));
+                    else
+                        tree = new ExpressionOR(exps.get(0), exps.get(1));
+                    //remove used expressions
+                    exps.remove(1); exps.remove(0);
+                }
+                else {
+                    if (matcher.group(0).equals("AND"))
+                        tree = new ExpressionAND(tree, exps.get(0));
+                    else
+                        tree = new ExpressionOR(tree, exps.get(0));
+                    //remove used expression
+                    exps.remove(0);
+                }
             }
-            qr = new RuleQuantifier(logicOperator, stateResult, s);
+            qr = new RuleQuantifier(tree, stateResult, s);
         }
         return qr;
     }

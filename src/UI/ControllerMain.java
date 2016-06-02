@@ -8,7 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
-import presets.FileProcessor;
+import file_stuff.FileProcessor;
 import rules.RuleQuantifier;
 import rules.eState;
 import javafx.event.ActionEvent;
@@ -52,6 +52,9 @@ public class ControllerMain implements Initializable {
     @FXML private Spinner sZoom;
     @FXML private Button bUp; @FXML private Button bDown;
     @FXML private Button bLeft; @FXML private Button bRight;
+    @FXML private Button bEmpty; @FXML private Button bArrow;
+    @FXML private Button bDragons; @FXML private Button bOscillators;
+    @FXML private Button bBomb; @FXML private Button bPattern;
 
     public ControllerMain(Game game, Stage r){
         this.g = game;
@@ -106,6 +109,12 @@ public class ControllerMain implements Initializable {
     }
 
     @FXML private void bStep_Pressed(ActionEvent ae){
+        g.work = false;
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         t = new Thread(g);
         t.setDaemon(true);
         g.generationIterations.set(1);
@@ -141,35 +150,31 @@ public class ControllerMain implements Initializable {
         }
     }
 
-    @FXML private void emptyPreset_Pressed(ActionEvent event){
-        g.resetGame();
-        gc.clearRect(0, 0, c.getWidth(), c.getHeight());
-        putCurrentRules();
-        xOffset = 0;
-        yOffset = 0;
-        sZoom.getValueFactory().setValue(10);
-        lGeneration.setText("Generation: 0");
-    }
-
-    @FXML private void simpleArrowPreset_Pressed(ActionEvent event){
-        xOffset = 0;
-        yOffset = 0;
-        sZoom.getValueFactory().setValue(10);
-        loadPreset("src/presets/presetSimpleArrow.txt");
-    }
-
-    @FXML private void arrowShipsPreset_Pressed(ActionEvent event){
-        xOffset = 0;
-        yOffset = 0;
-        sZoom.getValueFactory().setValue(10);
-        loadPreset("src/presets/presetArrowShips.txt");
-    }
-
-    @FXML private void dragonsPreset_Pressed(ActionEvent event) {
-        xOffset = 0;
-        yOffset = 0;
-        sZoom.getValueFactory().setValue(10);
-        loadPreset("src/presets/presetDragons.txt");
+    @FXML private void preset_Pressed(ActionEvent ae){
+        g.work = false;
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Button pressed = (Button) ae.getSource();
+        if (pressed == bEmpty){
+            resetPositioning();
+            g.resetGame();
+            gc.clearRect(0, 0, c.getWidth(), c.getHeight());
+            putCurrentRules();
+            lGeneration.setText("Generation: 0");
+        }
+        else if (pressed == bArrow)
+            loadPreset("R/presetArrowShips.txt");
+        else if (pressed == bDragons)
+            loadPreset("R/presetDragons.txt");
+        else if (pressed == bOscillators)
+            loadPreset("R/presetOscillators.txt");
+        else if (pressed == bBomb)
+            loadPreset("R/presetAtomBomb.txt");
+        else if (pressed == bPattern)
+            loadPreset("R/presetCoolPattern.txt");
     }
 
     @FXML private void canvasClicked(MouseEvent me){
@@ -259,12 +264,19 @@ public class ControllerMain implements Initializable {
     }
 
     private void loadPreset(String file){
+        resetPositioning();
         g.resetGame();
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
         fp.loadFromFile(file, g);
         GraphicsContext gc = c.getGraphicsContext2D();
         drawBoard(gc);
         putCurrentRules();
+    }
+
+    private void resetPositioning(){
+        xOffset = 0;
+        yOffset = 0;
+        sZoom.getValueFactory().setValue(10);
     }
 
     private void drawBoardGrid(Canvas c) {
@@ -316,5 +328,14 @@ public class ControllerMain implements Initializable {
         out.x = (xy.x - 450)/ blocksize - (blocksize*xOffset);
         out.y = (xy.y - 400)/ blocksize - (blocksize*yOffset);
         return out;
+    }
+
+    @FXML private void displayHelp(ActionEvent event){
+        ControllerRuleCreator.displayMessage("                      Developed with ♥ by Kamil Breński :)\n" +
+                "A project during my studies in Warsaw Univeristy of Technology.\n\n" +
+                "If anyone is wondering composite quantifier rules have order of operations\n" +
+                "                   hardcoded as leftmost to rightmost.\n\n" +
+                "Also behavior of loading presets, fast forwarding, stepping, while a simulation\n" +
+                "           is ongoing is UNDEFINED ! please pause the simulation first!\n");
     }
 }

@@ -1,0 +1,38 @@
+# POINTS
+points
+-3,-6,true
+-3,-3,true
+-4,-1,true
+-2,-1,true
+-3,-5,true
+-3,-4,true
+-3,-2,true
+-3,-1,true
+-3,0,true
+-4,-5,true
+-2,-5,true
+points END
+# RULES
+d0
+1,0,ALIVE
+1,4,ALIVE
+2,0,ALIVE
+2,1,ALIVE
+2,2,ALIVE
+2,3,ALIVE
+2,4,ALIVE
+3,0,ALIVE
+3,4,ALIVE
+r,alive
+q1
+If a cell is alive and there are more than or equal 3 alive cells in 3rd column then the cell should die
+q2
+If a cell is alive and there are exactly 1 alive cells in 3rd column then the cell should die
+q3
+If a cell is empty and there are more than 5 alive cells to the right AND there are exactly 1 alive cells in 2nd row AND there are exactly 1 alive cells in 4th row then the cell should live
+q4
+If a cell is empty and there are more than 5 alive cells to the left AND there are exactly 1 alive cells in 2nd row AND there are exactly 1 alive cells in 4th row then the cell should live
+q5
+If a cell is empty and there are exactly 2 alive cells to the left then the cell should live
+q6
+If a cell is empty and there are exactly 2 alive cells to the right then the cell should live
